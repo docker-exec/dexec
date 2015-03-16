@@ -24,8 +24,8 @@ func is_docker_present() (bool, string) {
     }
 }
 
-func is_docker_running() bool {
-    return true
+func is_docker_running() (bool, string) {
+    return true, "Running"
 }
 
 func run_anonymous_container(args ...string) {
@@ -65,7 +65,10 @@ func main() {
 
     app.Action = func(c *cli.Context) {
         found, msg := is_docker_present()
+        running, msg := is_docker_running()
         if (!found) {
+            log.Fatal(msg)
+        } else if(!running) {
             log.Fatal(msg)
         } else if len(c.Args()) == 0 {
             cli.ShowAppHelp(c)
