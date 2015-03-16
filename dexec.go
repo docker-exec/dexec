@@ -8,30 +8,39 @@ import (
     "github.com/codegangsta/cli"
 )
 
-// ${docker_cmd} run -t --rm \
-//     -w ${work_dir} \
-//     -v $(pwd -P)/${source_file}:${work_dir}/${source_file} \
-//     ${docker_image} ${source_file} ${entrypoint_args}
+func is_docker_present() bool {
+    return true
+}
+
+func is_docker_running() bool {
+    return true
+}
 
 func run_anonymous_container(image string) {
     out, err := exec.Command("docker", "run", "-t", "--rm", image, "echo", "test").Output()
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("output:\n%s\n", out)
+    fmt.Printf("%s: %s", image, out)
 }
 
 func main() {
     app := cli.NewApp()
     app.Name = "dexec"
     app.Usage = "dexec"
+    app.Flags = []cli.Flag {
+      cli.StringFlag{
+        Name: "srcfile",
+        Usage: "Source file",
+      },
+    }
     app.Action = func(c *cli.Context) {
-        run_anonymous_container("ubuntu")
-        out, err := exec.Command("docker", "ps").Output()
-        if err != nil {
-            log.Fatal(err)
+        if len(c.Args()) == 0 {
+            cli.ShowAppHelp(c)
+        } else {
+            run_anonymous_container("ubuntu")
+            run_anonymous_container("debian")
         }
-        fmt.Printf("Running Docker processes:\n%s\n", out)
     }
 
     app.Run(os.Args)
