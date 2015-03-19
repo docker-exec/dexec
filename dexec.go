@@ -28,7 +28,7 @@ func main() {
 		} else if len(c.Args()) == 0 {
 			cli.ShowAppHelp(c)
 		} else {
-			RunDexecContainer(GetExtension(c.Args()[0]), c.Args()[0], c.Args()[1:]...)
+			RunDexecContainer("cplusplus", c.Args()[0], c.Args()[1:]...)
 		}
 	}
 
