@@ -48,7 +48,8 @@ func IsDockerPresent() bool {
 }
 
 func IsDockerRunning() bool {
-	return true
+	out := exec.Command("docker", "info")
+	return out.Run() != nil
 }
 
 func RunAnonymousContainer(args ...string) {
