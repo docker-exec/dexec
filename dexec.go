@@ -1,4 +1,4 @@
-package main
+package dexec
 
 import (
     "fmt"
@@ -11,17 +11,36 @@ import (
     "code.google.com/p/go-uuid/uuid"
 )
 
-func is_docker_present() (bool, string) {
-    dockerVersionPattern := regexp.MustCompile(`^Docker version (\d+\.\d+\.\d+), build [a-z0-9]{7}`)
+func getRawDockerVersion() string {
+  out, err := exec.Command("docker", "-v").Output()
+  if err != nil {
+    panic(err.Error())
+  } else {
+    return string(out)
+  }
+}
 
-    out, err := exec.Command("docker", "-v").Output()
-    if err != nil {
-        return false, err.Error()
-    } else if !dockerVersionPattern.Match(out) {
-        return false, "Did not match Docker version string"
-    } else {
-        return true, dockerVersionPattern.FindStringSubmatch(string(out))[1]
-    }
+func extractDockerVersion(rawVersion string) string {
+  dockerVersionPattern := regexp.MustCompile(`^Docker version (\d+\.\d+\.\d+), build [a-z0-9]{7}`)
+
+  if dockerVersionPattern.MatchString(rawVersion) {
+      return dockerVersionPattern.FindStringSubmatch(rawVersion)[1]
+  } else {
+    panic("Did not match Docker version string")
+  }
+}
+
+func isDockerPresent() bool {
+  defer func() {
+      if r := recover(); r != nil {
+          fmt.Println("Recovered in f", r)
+      }
+  }()
+  present := false
+
+  present = extractDockerVersion(getRawDockerVersion()) != ""
+
+  return present
 }
 
 func is_docker_running() (bool, string) {
@@ -64,7 +83,7 @@ func main() {
     app.Usage = "dexec"
 
     app.Action = func(c *cli.Context) {
-        found, msg := is_docker_present()
+        found := isDockerPresent()
         running, msg := is_docker_running()
         if (!found) {
             log.Fatal(msg)
