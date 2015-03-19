@@ -31,10 +31,22 @@ or
 dexec foo.cpp -a -std=c++11
 ```
 
+### Keep build after run
+
+```sh
+dexec --keep-build foo.cpp
+```
+
+or
+
+```sh
+dexec -k foo.cpp
+```
+
 ### Build only
 
 ```sh
-dexec --build foo.cpp
+dexec --build-only foo.cpp
 ```
 
 or
