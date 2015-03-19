@@ -1,4 +1,5 @@
-# dexec
+# dexec [![Build Status](https://travis-ci.org/andystanton/dexec.svg?branch=master)](https://travis-ci.org/andystanton/dexec)
+
 Executes source code via Docker images at https://github.com/docker-exec.
 
 # Target Features
