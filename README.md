@@ -18,7 +18,7 @@ dexec foo.cpp
 dexec foo.cpp bar.cpp
 ```
 
-### Pass arguments for build
+### Pass individual arguments for build
 
 ```sh
 dexec foo.cpp --arg -std=c++11 --arg --oO
@@ -29,6 +29,19 @@ or
 ```sh
 
 dexec foo.cpp -a -std=c++11
+```
+
+### Pass argument string for build
+
+```sh
+dexec foo.cpp --argline='-std=c++11 -o bar'
+```
+
+or
+
+```sh
+
+dexec foo.cpp -A '-std=c++11 -o bar'
 ```
 
 ### Keep build after run
@@ -65,6 +78,18 @@ or
 
 ```sh
 dexec foo.cpp -e hello -e world
+```
+
+### Pass argument string for execution
+
+```sh
+dexec foo.cpp --exec-argline='hello world'
+```
+
+or
+
+```sh
+dexec foo.cpp -E 'hello world'
 ```
 
 ## Version 2
