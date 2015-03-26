@@ -1,4 +1,4 @@
-package dexec
+package main
 
 import "testing"
 import "./testutils"

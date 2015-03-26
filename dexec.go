@@ -1,4 +1,4 @@
-package dexec
+package main
 
 import (
 	"github.com/codegangsta/cli"
@@ -28,7 +28,7 @@ func main() {
 		} else if len(c.Args()) == 0 {
 			cli.ShowAppHelp(c)
 		} else {
-			RunDexecContainer("cplusplus", c.Args()[0], c.Args()[1:]...)
+			RunDexecContainer("cpp", c.Args()[0], c.Args()[1:]...)
 		}
 	}
 
