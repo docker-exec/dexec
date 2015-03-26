@@ -13,6 +13,33 @@ func GetExtension(filename string) string {
 }
 
 func main() {
+	extensionMap := map[string]string{
+		"c": "c",
+		"clj": "clojure",
+		"coffee": "coffee",
+		"cpp": "cpp",
+		"cs": "csharp",
+		"d": "d",
+		"erl": "erlang",
+		"fs": "fsharp",
+		"go": "go",
+		"groovy": "groovy",
+		"hs": "haskell",
+		"java": "java",
+		"lisp": "lisp",
+		"js": "node",
+		"m": "objc",
+		"ml": "ocaml",
+		"pl": "perl",
+		"php": "php",
+		"py": "python",
+		"rkt": "racket",
+		"rb": "ruby",
+		"rs": "rust",
+		"scala": "scala",
+		"sh": "bash",
+	}
+
 	app := cli.NewApp()
 	app.Name = "dexec"
 	app.Usage = "dexec"
@@ -28,7 +55,7 @@ func main() {
 		} else if len(c.Args()) == 0 {
 			cli.ShowAppHelp(c)
 		} else {
-			RunDexecContainer("cpp", c.Args()[0], c.Args()[1:]...)
+			RunDexecContainer(extensionMap[GetExtension(c.Args()[0])], c.Args()[0], c.Args()[1:]...)
 		}
 	}
 
