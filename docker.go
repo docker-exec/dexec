@@ -1,7 +1,6 @@
-package dexec
+package main
 
 import (
-	"code.google.com/p/go-uuid/uuid"
 	"fmt"
 	"os"
 	"os/exec"
@@ -48,8 +47,9 @@ func IsDockerPresent() bool {
 }
 
 func IsDockerRunning() bool {
-	out := exec.Command("docker", "info")
-	return out.Run() != nil
+	// out := exec.Command("docker", "info")
+	// return out.Run() != nil
+	return true
 }
 
 func RunAnonymousContainer(args ...string) {
@@ -62,16 +62,15 @@ func RunAnonymousContainer(args ...string) {
 }
 
 func RunDexecContainer(language string, sourcefile string, entrypointargs ...string) {
-	workdir := fmt.Sprintf("/tmp/%s", uuid.New())
-	abssourcefile, _ := filepath.Abs(sourcefile)
+	dexecPath := "/tmp/dexec/build"
+	abssourcefile, _ := filepath.Abs(".")
 
 	RunAnonymousContainer(
 		append(
 			[]string{
-				"-w", workdir,
-				"-v", fmt.Sprintf("%s:%s/%s", abssourcefile, workdir, sourcefile),
+				"-v", fmt.Sprintf("%s:%s:ro", abssourcefile, dexecPath),
 				fmt.Sprintf("dexec/%s", language),
-				fmt.Sprintf("%s/%s", workdir, sourcefile)},
+				sourcefile},
 			entrypointargs...,
 		)...,
 	)
