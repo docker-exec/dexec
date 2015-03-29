@@ -55,7 +55,9 @@ func main() {
 		} else if len(c.Args()) == 0 {
 			cli.ShowAppHelp(c)
 		} else {
-			RunDexecContainer(extensionMap[GetExtension(c.Args()[0])], c.Args()[0], c.Args()[1:]...)
+			sourceFile := c.Args()[0]
+			imageName := extensionMap[GetExtension(sourceFile)]
+			RunDexecContainer(imageName, sourceFile, c.Args()[1:]...)
 		}
 	}
 
