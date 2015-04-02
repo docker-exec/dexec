@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 )
 
@@ -14,17 +15,12 @@ const (
 	Source   OptionType = iota
 )
 
-type Option struct {
-	optionType OptionType
-	value      string
-}
-
-type ParsedArgs struct {
+type Options struct {
 	filename string
 	options  map[OptionType][]string
 }
 
-func GetTypeForOpt(opt string, next string) (Option, bool, error) {
+func GetTypeForOpt(opt string, next string) (OptionType, string, int, error) {
 	patternStandaloneA := regexp.MustCompile(`^-(a|-arg)$`)
 	patternStandaloneB := regexp.MustCompile(`^-(b|-build-arg)$`)
 	patternCombinationA := regexp.MustCompile(`^--arg=(.+)$`)
@@ -33,49 +29,45 @@ func GetTypeForOpt(opt string, next string) (Option, bool, error) {
 
 	switch {
 	case patternStandaloneA.FindStringIndex(opt) != nil:
-		return Option{Arg, next}, true, nil
+		return Arg, next, 2, nil
 	case patternStandaloneB.FindStringIndex(opt) != nil:
-		return Option{BuildArg, next}, true, nil
+		return BuildArg, next, 2, nil
 	case patternCombinationA.FindStringIndex(opt) != nil:
-		return Option{Arg, patternCombinationA.FindStringSubmatch(opt)[1]}, false, nil
+		return Arg, patternCombinationA.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationB.FindStringIndex(opt) != nil:
-		return Option{BuildArg, patternCombinationB.FindStringSubmatch(opt)[1]}, false, nil
+		return BuildArg, patternCombinationB.FindStringSubmatch(opt)[1], 1, nil
 	case patternSource.FindStringIndex(opt) != nil:
-		return Option{Source, opt}, false, nil
+		return Source, opt, 1, nil
 	default:
-		return Option{None, ""}, false, errors.New("Unknown")
+		return None, "", 0, errors.New(fmt.Sprintf("Unknown option: %s", opt))
 	}
 }
 
-func ParseOsArgsRR(osArgs []string) map[OptionType][]string {
-	if len(osArgs) == 0 {
+func ParseOptions(options []string) map[OptionType][]string {
+	if len(options) == 0 {
 		return map[OptionType][]string{}
 	}
 
 	next := ""
-	if len(osArgs) > 1 {
-		next = osArgs[1]
+	if len(options) > 1 {
+		next = options[1]
 	}
-	o, c, _ := GetTypeForOpt(osArgs[0], next)
+	t, v, c, _ := GetTypeForOpt(options[0], next)
 
-	nextIndex := 1
-	if c {
-		nextIndex = 2
-	}
-	if len(osArgs) < nextIndex {
+	if len(options) < c {
 		return map[OptionType][]string{}
 	}
 
-	m := ParseOsArgsRR(osArgs[nextIndex:])
-	m[o.optionType] = append([]string{o.value}, m[o.optionType]...)
+	m := ParseOptions(options[c:])
+	m[t] = append([]string{v}, m[t]...)
 	return m
 }
 
-func ParseOsArgs(osArgs []string) ParsedArgs {
-	var parsedArgs ParsedArgs
+func ParseOsArgs(osArgs []string) Options {
+	var Options Options
 
-	parsedArgs.filename = osArgs[0]
-	parsedArgs.options = ParseOsArgsRR(osArgs[1:])
+	Options.filename = osArgs[0]
+	Options.options = ParseOptions(osArgs[1:])
 
-	return parsedArgs
+	return Options
 }
