@@ -1,92 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"github.com/codegangsta/cli"
 	"log"
 	"os"
 	"regexp"
-	"fmt"
-	"errors"
 )
 
 func GetExtension(filename string) string {
 	filenamePattern := regexp.MustCompile(`.*\.(.*)`)
 	return filenamePattern.FindStringSubmatch(filename)[1]
-}
-
-type argType int
-
-const (
-	None argType = iota
-	Arg argType = iota
-	BuildArg argType = iota
-	Source argType = iota
-)
-
-type ParsedArgs struct {
-	FileName string
-	Options map[argType][]string
-	Sources, Args, BuildArgs []string
-}
-
-func GetTypeForOpt(opt string, next string) (argType, string, bool, error) {
-	patternStandaloneA := regexp.MustCompile(`^-(a|-arg)$`)
-	patternStandaloneB := regexp.MustCompile(`^-(b|-build-arg)$`)
-	patternCombinationA := regexp.MustCompile(`^--arg=(.+)$`)
-	patternCombinationB := regexp.MustCompile(`^--build-arg=(.+)$`)
-	patternSource := regexp.MustCompile(`^[^-_].+\..+`)
-
-	switch {
-		case patternStandaloneA.FindStringIndex(opt) != nil:
-			return Arg, next, true, nil
-		case patternStandaloneB.FindStringIndex(opt) != nil:
-			return BuildArg, next, true, nil
-		case patternCombinationA.FindStringIndex(opt) != nil:
-			return Arg, patternCombinationA.FindStringSubmatch(opt)[1], false, nil
-		case patternCombinationB.FindStringIndex(opt) != nil:
-			return BuildArg, patternCombinationB.FindStringSubmatch(opt)[1], false, nil
-		case patternSource.FindStringIndex(opt) != nil:
-			return Source, opt, false, nil
-		default:
-			return None, "", false, errors.New("Unknown")
-	}
-}
-
-func ParseOsArgsRR(osArgs []string) map[argType][]string {
-	if len(osArgs) == 0 {
-		return map[argType][]string{}
-	}
-
-	next := ""
-	if len(osArgs) > 1 {
-	    next = osArgs[1]
-	}
-	t, v, c, _ := GetTypeForOpt(osArgs[0], next)
-
-	nextIndex := 1
-	if c {
-		nextIndex = 2
-	}
-	if len(osArgs) < nextIndex {
-		return map[argType][]string{}
-	}
-
-	m := ParseOsArgsRR(osArgs[nextIndex:])
-	m[t] = append([]string{v}, m[t]...)
-	return m
-}
-
-func ParseOsArgs(osArgs []string) ParsedArgs {
-	var parsedArgs ParsedArgs
-
-	parsedArgs.FileName = osArgs[0]
-	m := ParseOsArgsRR(osArgs[1:])
-
-	parsedArgs.Sources = m[Source]
-	parsedArgs.Args = m[Arg]
-	parsedArgs.BuildArgs = m[BuildArg]
-
-	return parsedArgs
 }
 
 func main() {
