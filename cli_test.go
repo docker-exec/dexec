@@ -11,9 +11,34 @@ type OptionData struct {
 }
 
 type WantedData struct {
-	optionType OptionType
-	value      string
-	chomped    bool
+	optionType   OptionType
+	value        string
+	chomped      int
+	errorMessage string
+}
+
+func TestUnknown(t *testing.T) {
+	cases := []struct {
+		opt  OptionData
+		want WantedData
+	}{
+		{
+			OptionData{"-bad", "Unknown option: -bad"},
+			WantedData{None, "", 0, "Unknown option: -bad"},
+		},
+	}
+	for _, c := range cases {
+		gotOptionType, gotOptionValue, gotChomped, gotError := GetTypeForOpt(c.opt.first, c.opt.second)
+		if gotOptionType != c.want.optionType {
+			t.Errorf("ParseOsArgsR %q != %q", gotOptionType, c.want.optionType)
+		} else if gotOptionValue != c.want.value {
+			t.Errorf("ParseOsArgsR %q != %q", gotOptionValue, c.want.value)
+		} else if gotChomped != c.want.chomped {
+			t.Errorf("ParseOsArgsR %q != %q", gotChomped, c.want.chomped)
+		} else if gotError.Error() != c.want.errorMessage {
+			t.Errorf("ParseOsArgsR %q != %q", gotError.Error(), c.want.errorMessage)
+		}
+	}
 }
 
 func TestGet(t *testing.T) {
@@ -23,39 +48,39 @@ func TestGet(t *testing.T) {
 	}{
 		{
 			OptionData{"foo.bar", ""},
-			WantedData{Source, "foo.bar", false},
+			WantedData{Source, "foo.bar", 1, ""},
 		},
 		{
 			OptionData{"-b", "foo"},
-			WantedData{BuildArg, "foo", true},
+			WantedData{BuildArg, "foo", 2, ""},
 		},
 		{
 			OptionData{"--build-arg", "foo"},
-			WantedData{BuildArg, "foo", true},
+			WantedData{BuildArg, "foo", 2, ""},
 		},
 		{
 			OptionData{"--build-arg=foo", ""},
-			WantedData{BuildArg, "foo", false},
+			WantedData{BuildArg, "foo", 1, ""},
 		},
 		{
 			OptionData{"-a", "foo"},
-			WantedData{Arg, "foo", true},
+			WantedData{Arg, "foo", 2, ""},
 		},
 		{
 			OptionData{"--arg", "foo"},
-			WantedData{Arg, "foo", true},
+			WantedData{Arg, "foo", 2, ""},
 		},
 		{
 			OptionData{"--arg=foo", ""},
-			WantedData{Arg, "foo", false},
+			WantedData{Arg, "foo", 1, ""},
 		},
 	}
 	for _, c := range cases {
-		gotOption, gotChomped, _ := GetTypeForOpt(c.opt.first, c.opt.second)
-		if gotOption.optionType != c.want.optionType {
-			t.Errorf("ParseOsArgsR %q != %q", gotOption.optionType, c.want.optionType)
-		} else if gotOption.value != c.want.value {
-			t.Errorf("ParseOsArgsR %q != %q", gotOption.value, c.want.value)
+		gotOptionType, gotOptionValue, gotChomped, _ := GetTypeForOpt(c.opt.first, c.opt.second)
+		if gotOptionType != c.want.optionType {
+			t.Errorf("ParseOsArgsR %q != %q", gotOptionType, c.want.optionType)
+		} else if gotOptionValue != c.want.value {
+			t.Errorf("ParseOsArgsR %q != %q", gotOptionValue, c.want.value)
 		} else if gotChomped != c.want.chomped {
 			t.Errorf("ParseOsArgsR %q != %q", gotChomped, c.want.chomped)
 		}
