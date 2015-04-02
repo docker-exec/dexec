@@ -131,3 +131,54 @@ func TestBuildArgs(t *testing.T) {
 		}
 	}
 }
+
+func TestOrdering(t *testing.T) {
+	cases := []struct {
+		osArgs []string
+		want   map[OptionType][]string
+	}{
+		{
+			[]string{
+				"filename",
+				"source1.foo",
+				"-b", "b_foo",
+				"source2.foo",
+				"--arg=a_foobar",
+				"source3.foo",
+				"--build-arg", "b_bar",
+				"source4.foo",
+				"--arg", "a_bar",
+				"source5.foo",
+				"--build-arg=b_foobar",
+				"source6.foo",
+				"-a", "a_foo",
+			},
+			map[OptionType][]string{
+				Arg: {
+					"a_foobar", "a_bar", "a_foo",
+				},
+				BuildArg: {
+					"b_foo", "b_bar", "b_foobar",
+				},
+				Source: {
+					"source1.foo",
+					"source2.foo",
+					"source3.foo",
+					"source4.foo",
+					"source5.foo",
+					"source6.foo",
+				},
+			},
+		},
+	}
+	for _, c := range cases {
+		got := ParseOsArgs(c.osArgs)
+		if !reflect.DeepEqual(got.options[BuildArg], c.want[BuildArg]) {
+			t.Errorf("ParseOsArgs %q != %q", got.options[BuildArg], c.want[BuildArg])
+		} else if !reflect.DeepEqual(got.options[Arg], c.want[Arg]) {
+			t.Errorf("ParseOsArgs %q != %q", got.options[Arg], c.want[Arg])
+		} else if !reflect.DeepEqual(got.options[Source], c.want[Source]) {
+			t.Errorf("ParseOsArgs %q != %q", got.options[Source], c.want[Source])
+		}
+	}
+}
