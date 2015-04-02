@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"fmt"
+	"errors"
 )
 
 func GetExtension(filename string) string {
@@ -13,75 +14,77 @@ func GetExtension(filename string) string {
 	return filenamePattern.FindStringSubmatch(filename)[1]
 }
 
-type ArgType int
+type argType int
 
 const (
-	None ArgType = iota
-	Arg ArgType = iota
-	BuildArg ArgType = iota
-	Source ArgType = iota
+	None argType = iota
+	Arg argType = iota
+	BuildArg argType = iota
+	Source argType = iota
 )
-
 
 type ParsedArgs struct {
 	FileName string
+	Options map[argType][]string
 	Sources, Args, BuildArgs []string
 }
 
-func ParseOsArgsR(osArgs []string) ParsedArgs {
-	var parsedArgs ParsedArgs
-	parsedArgs.FileName = osArgs[0]
-
-	parsedArgs.Args, parsedArgs.BuildArgs, parsedArgs.Sources = ParseOsArgsR2(None, osArgs[1:])
-
-	return parsedArgs
-}
-
-func ParseOsArgsR2(argType ArgType, osArgs []string) ([]string, []string, []string) {
-	if len(osArgs) == 1 {
-
-	}
-
-
-	switch argType {
-		case None: s1()
-		case 4, 5, 6, 7: s2()
-	}
-	return []string{}, []string{}, []string{}
-}
-
-func GetArgType(arg string) ArgType {
-	
-}
-
-func ParseOsArgs(osArgs []string) ParsedArgs {
-
+func GetTypeForOpt(opt string, next string) (argType, string, bool, error) {
 	patternStandaloneA := regexp.MustCompile(`^-(a|-arg)$`)
 	patternStandaloneB := regexp.MustCompile(`^-(b|-build-arg)$`)
 	patternCombinationA := regexp.MustCompile(`^--arg=(.+)$`)
 	patternCombinationB := regexp.MustCompile(`^--build-arg=(.+)$`)
-
 	patternSource := regexp.MustCompile(`^[^-_].+\..+`)
 
+	switch {
+		case patternStandaloneA.FindStringIndex(opt) != nil:
+			return Arg, next, true, nil
+		case patternStandaloneB.FindStringIndex(opt) != nil:
+			return BuildArg, next, true, nil
+		case patternCombinationA.FindStringIndex(opt) != nil:
+			return Arg, patternCombinationA.FindStringSubmatch(opt)[1], false, nil
+		case patternCombinationB.FindStringIndex(opt) != nil:
+			return BuildArg, patternCombinationB.FindStringSubmatch(opt)[1], false, nil
+		case patternSource.FindStringIndex(opt) != nil:
+			return Source, opt, false, nil
+		default:
+			return None, "", false, errors.New("Unknown")
+	}
+}
+
+func ParseOsArgsRR(osArgs []string) map[argType][]string {
+	if len(osArgs) == 0 {
+		return map[argType][]string{}
+	}
+
+	next := ""
+	if len(osArgs) > 1 {
+	    next = osArgs[1]
+	}
+	t, v, c, _ := GetTypeForOpt(osArgs[0], next)
+
+	nextIndex := 1
+	if c {
+		nextIndex = 2
+	}
+	if len(osArgs) < nextIndex {
+		return map[argType][]string{}
+	}
+
+	m := ParseOsArgsRR(osArgs[nextIndex:])
+	m[t] = append([]string{v}, m[t]...)
+	return m
+}
+
+func ParseOsArgs(osArgs []string) ParsedArgs {
 	var parsedArgs ParsedArgs
 
 	parsedArgs.FileName = osArgs[0]
+	m := ParseOsArgsRR(osArgs[1:])
 
-	toParse := osArgs[1:]
-
-	for i, opt := range toParse {
-		if patternStandaloneA.FindStringIndex(opt) != nil {
-			parsedArgs.Args = append(parsedArgs.Args, toParse[i + 1])
-		} else if patternCombinationA.FindStringIndex(opt) != nil {
-			parsedArgs.Args = append(parsedArgs.Args, patternCombinationA.FindStringSubmatch(opt)[1])
-		} else if patternStandaloneB.FindStringIndex(opt) != nil {
-			parsedArgs.BuildArgs = append(parsedArgs.BuildArgs, toParse[i + 1])
-		} else if patternCombinationB.FindStringIndex(opt) != nil {
-			parsedArgs.BuildArgs = append(parsedArgs.BuildArgs, patternCombinationB.FindStringSubmatch(opt)[1])
-		} else if patternSource.FindStringIndex(opt) != nil {
-			parsedArgs.Sources = append(parsedArgs.Sources, opt)
-		}
-	}
+	parsedArgs.Sources = m[Source]
+	parsedArgs.Args = m[Arg]
+	parsedArgs.BuildArgs = m[BuildArg]
 
 	return parsedArgs
 }
