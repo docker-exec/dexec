@@ -6,7 +6,7 @@ import "./testutils"
 func TestDockerPresence(t *testing.T) {
 	cases := []struct {
 		rawVersion string
-		want bool
+		want       bool
 	}{
 		{"Docker version 1.5.0, build abcdef0", true},
 		{"Docker version x.y.z, build abcdef0", false},
