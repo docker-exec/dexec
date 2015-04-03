@@ -152,6 +152,24 @@ func TestSources(t *testing.T) {
 	}
 }
 
+func TestIncludes(t *testing.T) {
+	cases := []struct {
+		osArgs []string
+		want   []string
+	}{
+		{
+			[]string{"filename", "-i", "foo", "--include", "bar", "--include=foobar"},
+			[]string{"foo", "bar", "foobar"},
+		},
+	}
+	for _, c := range cases {
+		got := ParseOsArgs(c.osArgs)
+		if !reflect.DeepEqual(got.options[Include], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.options[Include], c.want)
+		}
+	}
+}
+
 func TestArgs(t *testing.T) {
 	cases := []struct {
 		osArgs []string
