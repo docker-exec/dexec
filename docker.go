@@ -84,7 +84,6 @@ func IsDockerRunning() bool {
 	return running
 }
 
-
 func RunAnonymousContainer(image string, extraDockerArgs []string, entrypointArgs []string) {
 	baseDockerArgs := []string{"run", "--rm"}
 	imageDockerArgs := []string{"-t", image}
@@ -105,7 +104,11 @@ func RunAnonymousContainer(image string, extraDockerArgs []string, entrypointArg
 }
 
 func RunDexecContainer(image string, options map[OptionType][]string) {
-	absPath, _ := filepath.Abs(".")
+	path := "."
+	if len(options[TargetDir]) > 0 {
+		path = options[TargetDir][0]
+	}
+	absPath, _ := filepath.Abs(path)
 
 	dockerArgs := []string{
 		"-v",

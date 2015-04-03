@@ -43,25 +43,30 @@ var LookupExtensionByImage = func() func(string) string {
 	}
 }()
 
-func validate() {
+func validate(cli CLI) bool {
 	if !IsDockerPresent() {
 		log.Fatal("Docker not found")
 	} else if !IsDockerRunning() {
 		log.Fatal("Docker not running")
 	}
-}
 
-func main() {
-	validate()
-
-	cli := ParseOsArgs(os.Args)
-
+	valid := false
 	if len(cli.options[VersionFlag]) != 0 {
 		DisplayVersion()
 	} else if len(cli.options[Source]) == 0 ||
-		len(cli.options[HelpFlag]) != 0 {
+		len(cli.options[HelpFlag]) != 0 ||
+		len(cli.options[TargetDir]) > 1 {
 		DisplayHelp(cli.filename)
 	} else {
+		valid = true
+	}
+	return valid
+}
+
+func main() {
+	cli := ParseOsArgs(os.Args)
+
+	if validate(cli) {
 		RunDexecContainer(
 			LookupExtensionByImage(ExtractFileExtension(cli.options[Source][0])),
 			cli.options,
