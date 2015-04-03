@@ -11,7 +11,7 @@ import (
 
 const dexecPath = "/tmp/dexec/build"
 const dexecImageTemplate = "dexec/%s"
-const dexecVolumeTemplate = "%s:%s:ro"
+const dexecVolumeTemplate = "%s/%s:%s/%s:ro"
 
 func AddPrefix(inSlice []string, prefix string) []string {
 	outSlice := []string{}
@@ -110,9 +110,16 @@ func RunDexecContainer(image string, options map[OptionType][]string) {
 	}
 	absPath, _ := filepath.Abs(path)
 
-	dockerArgs := []string{
-		"-v",
-		fmt.Sprintf(dexecVolumeTemplate, absPath, dexecPath),
+	dockerArgs := []string{}
+
+	for _, source := range append(options[Source], options[Include]...) {
+		dockerArgs = append(
+			dockerArgs,
+			[]string{
+				"-v",
+				fmt.Sprintf(dexecVolumeTemplate, absPath, source, dexecPath, source),
+			}...,
+		)
 	}
 
 	entrypointArgs := JoinStringSlices(
