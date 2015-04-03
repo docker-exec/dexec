@@ -9,6 +9,10 @@ import (
 	"strconv"
 )
 
+const dexecPath = "/tmp/dexec/build"
+const dexecImageTemplate = "dexec/%s"
+const dexecVolumeTemplate = "%s:%s:ro"
+
 func AddPrefix(inSlice []string, prefix string) []string {
 	outSlice := []string{}
 	for _, option := range inSlice {
@@ -101,12 +105,11 @@ func RunAnonymousContainer(image string, extraDockerArgs []string, entrypointArg
 }
 
 func RunDexecContainer(image string, options map[OptionType][]string) {
-	dexecPath := "/tmp/dexec/build"
 	absPath, _ := filepath.Abs(".")
 
 	dockerArgs := []string{
 		"-v",
-		fmt.Sprintf("%s:%s:ro", absPath, dexecPath),
+		fmt.Sprintf(dexecVolumeTemplate, absPath, dexecPath),
 	}
 
 	entrypointArgs := JoinStringSlices(
@@ -116,7 +119,7 @@ func RunDexecContainer(image string, options map[OptionType][]string) {
 	)
 
 	RunAnonymousContainer(
-		fmt.Sprintf("dexec/%s", image),
+		fmt.Sprintf(dexecImageTemplate, image),
 		dockerArgs,
 		entrypointArgs,
 	)
