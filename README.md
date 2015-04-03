@@ -2,73 +2,52 @@
 
 Executes source code via Docker images at https://github.com/docker-exec.
 
-# Target Features
+Currently in development...
 
-## Version 1
-
-### Execute single source file
+### Execute source files
 
 ```sh
 dexec foo.cpp
-```
-
-### Execute multiple source files
-
-```sh
 dexec foo.cpp bar.cpp
 ```
 
 ### Pass individual arguments for build
 
 ```sh
-dexec foo.cpp --arg -std=c++11 --arg --oO
-```
-
-or
-
-```sh
-
+dexec foo.cpp --build-arg=-std=c++11
+dexec foo.cpp --build-arg -std=c++11
 dexec foo.cpp -a -std=c++11
 ```
 
 ### Pass argument string for build
 
 ```sh
-dexec foo.cpp --argline='-std=c++11 -o bar'
-```
-
-or
-
-```sh
-
-dexec foo.cpp -A '-std=c++11 -o bar'
+dexec foo.cpp --build-argline='-std=c++11 -o bar'
+dexec foo.cpp --build-argline '-std=c++11 -o bar'
+dexec foo.cpp -B '-std=c++11 -o bar'
 ```
 
 ### Pass arguments for execution
 
 ```sh
 dexec foo.cpp --exec-arg=hello --exec-arg=world
-```
-
-or
-
-```sh
+dexec foo.cpp --exec-arg hello --exec-arg world
 dexec foo.cpp -e hello -e world
 ```
 
 ### Pass argument string for execution
 
 ```sh
-dexec foo.cpp --exec-argline='hello world'
+dexec foo.cpp --argline='hello world'
+dexec foo.cpp --argline 'hello world'
+dexec foo.cpp --A 'hello world'
 ```
 
-or
+### Specify location of source files
 
 ```sh
-dexec foo.cpp -E 'hello world'
+dexec -C /path/to/sources foo.cpp
 ```
-
-## Version 2
 
 ### Support shebang in source files
 
@@ -97,10 +76,4 @@ or
 
 ```sh
 dexec -i cpp foo.cpp
-```
-
-### Execute source code in a directory (requires image override?)
-
-```sh
-dexec --image=cpp .
 ```

@@ -53,6 +53,7 @@ func IsDockerRunning() bool {
 
 func RunAnonymousContainer(args ...string) {
 	newArgs := append([]string{"run", "-t", "--rm"}, args...)
+	// fmt.Print(newArgs)
 	out := exec.Command("docker", newArgs...)
 	out.Stdin = os.Stdin
 	out.Stdout = os.Stdout
@@ -60,17 +61,38 @@ func RunAnonymousContainer(args ...string) {
 	out.Run()
 }
 
-func RunDexecContainer(language string, sourcefile string, entrypointargs ...string) {
+func MapStringSlice(inSlice []string, operation func(string) []string) []string {
+	outSlice := []string{}
+	for _, target := range inSlice {
+		outSlice = append(outSlice, operation(target)...)
+	}
+	return outSlice
+}
+
+func addPrefix(prefix string) func(string) []string {
+	return func(option string) []string {
+		return []string{prefix, option}
+	}
+}
+
+func RunDexecContainer(image string, options map[OptionType][]string) {
 	dexecPath := "/tmp/dexec/build"
-	abssourcefile, _ := filepath.Abs(".")
+	absPath, _ := filepath.Abs(".")
 
 	RunAnonymousContainer(
 		append(
-			[]string{
-				"-v", fmt.Sprintf("%s:%s:ro", abssourcefile, dexecPath),
-				fmt.Sprintf("dexec/%s", language),
-				sourcefile},
-			entrypointargs...,
+			append(
+				append(
+					[]string{
+						"-v",
+						fmt.Sprintf("%s:%s:ro", absPath, dexecPath),
+						fmt.Sprintf("dexec/%s", image),
+					},
+					options[Source]...,
+				),
+				MapStringSlice(options[BuildArg], addPrefix("-b"))...,
+			),
+			MapStringSlice(options[Arg], addPrefix("-a"))...,
 		)...,
 	)
 }

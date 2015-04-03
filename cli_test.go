@@ -74,6 +74,22 @@ func TestGet(t *testing.T) {
 			OptionData{"--arg=foo", ""},
 			WantedData{Arg, "foo", 1, ""},
 		},
+		{
+			OptionData{"--help", ""},
+			WantedData{HelpFlag, "", 1, ""},
+		},
+		{
+			OptionData{"-h", ""},
+			WantedData{HelpFlag, "", 1, ""},
+		},
+		{
+			OptionData{"--version", ""},
+			WantedData{VersionFlag, "", 1, ""},
+		},
+		{
+			OptionData{"-v", ""},
+			WantedData{VersionFlag, "", 1, ""},
+		},
 	}
 	for _, c := range cases {
 		gotOptionType, gotOptionValue, gotChomped, _ := GetTypeForOpt(c.opt.first, c.opt.second)
