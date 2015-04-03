@@ -6,12 +6,12 @@ import (
 	"regexp"
 )
 
-func GetExtension(filename string) string {
+func ExtractFileExtension(filename string) string {
 	filenamePattern := regexp.MustCompile(`.*\.(.*)`)
 	return filenamePattern.FindStringSubmatch(filename)[1]
 }
 
-var extensionDict = func() func(string) string {
+var LookupExtensionByImage = func() func(string) string {
 	innerMap := map[string]string{
 		"c":      "c",
 		"clj":    "clojure",
@@ -43,26 +43,28 @@ var extensionDict = func() func(string) string {
 	}
 }()
 
+func validate() {
+	if !IsDockerPresent() {
+		log.Fatal("Docker not found")
+	} else if !IsDockerRunning() {
+		log.Fatal("Docker not running")
+	}
+}
 
 func main() {
-	found := IsDockerPresent()
-	running := IsDockerRunning()
+	validate()
 
-	if !found {
-		log.Fatal("Docker not found")
-	} else if !running {
-		log.Fatal("Docker not running")
+	cli := ParseOsArgs(os.Args)
+
+	if len(cli.options[VersionFlag]) != 0 {
+		DisplayVersion()
+	} else if len(cli.options[Source]) == 0 ||
+		len(cli.options[HelpFlag]) != 0 {
+		DisplayHelp(cli.filename)
 	} else {
-		options := ParseOsArgs(os.Args)
-
-		if len(options.options[VersionFlag]) != 0 {
-			PrintVersion()
-		} else if len(options.options[Source]) == 0 ||
-			len(options.options[HelpFlag]) != 0 {
-			PrintHelp()
-		} else {
-			imageName := extensionDict(GetExtension(options.options[Source][0]))
-			RunDexecContainer(imageName, options.options)
-		}
+		RunDexecContainer(
+			LookupExtensionByImage(ExtractFileExtension(cli.options[Source][0])),
+			cli.options,
+		)
 	}
 }

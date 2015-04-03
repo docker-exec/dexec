@@ -17,7 +17,7 @@ const (
 	VersionFlag OptionType = iota
 )
 
-type Options struct {
+type CLI struct {
 	filename string
 	options  map[OptionType][]string
 }
@@ -51,50 +51,48 @@ func GetTypeForOpt(opt string, next string) (OptionType, string, int, error) {
 	}
 }
 
-func ParseOptions(options []string) map[OptionType][]string {
-	if len(options) == 0 {
+func ParseArgs(args []string) map[OptionType][]string {
+	if len(args) == 0 {
 		return map[OptionType][]string{}
 	}
 
 	next := ""
-	if len(options) > 1 {
-		next = options[1]
+	if len(args) > 1 {
+		next = args[1]
 	}
-	t, v, c, _ := GetTypeForOpt(options[0], next)
+	t, v, c, _ := GetTypeForOpt(args[0], next)
 
-	if len(options) < c || c == 0 {
+	if len(args) < c || c == 0 {
 		return map[OptionType][]string{}
 	}
 
-	m := ParseOptions(options[c:])
+	m := ParseArgs(args[c:])
 	m[t] = append([]string{v}, m[t]...)
 	return m
 }
 
-func ParseOsArgs(osArgs []string) Options {
-	var Options Options
-
-	Options.filename = osArgs[0]
-	Options.options = ParseOptions(osArgs[1:])
-
-	return Options
+func ParseOsArgs(args []string) CLI {
+	return CLI{
+		filename: args[0],
+		options:  ParseArgs(args[1:]),
+	}
 }
 
-func PrintHelp() {
+func DisplayHelp(filename string) {
 	fmt.Println("Name:")
-	fmt.Println("\tdexec - Execute code in many languages with Docker!")
+	fmt.Printf("\t%s - Execute code in many languages with Docker!\n", filename)
 	fmt.Println()
 	fmt.Println("Usage:")
 	fmt.Println("\tdexec [options]")
 	fmt.Println()
 	fmt.Println("Options:")
-	fmt.Printf("\t%-50s%s\n", "<source file>", "execute source file")
-	fmt.Printf("\t%-50s%s\n", "--arg, -a <argument>", "pass <argument> to the executing code")
-	fmt.Printf("\t%-50s%s\n", "--build-arg, -b <build argument>", "pass <build argument> to compiler")
-	fmt.Printf("\t%-50s%s\n", "--help, -h", "show help")
-	fmt.Printf("\t%-50s%s\n", "--version, -v", "display version")
+	fmt.Printf("\t%-50s%s\n", "<source file>", "Execute source file")
+	fmt.Printf("\t%-50s%s\n", "--arg, -a <argument>", "Pass <argument> to the executing code")
+	fmt.Printf("\t%-50s%s\n", "--build-arg, -b <build argument>", "Pass <build argument> to compiler")
+	fmt.Printf("\t%-50s%s\n", "--help, -h", "Show help")
+	fmt.Printf("\t%-50s%s\n", "--version, -v", "Display version info")
 }
 
-func PrintVersion() {
+func DisplayVersion() {
 	fmt.Println("dexec 1.0.0-alpha")
 }
