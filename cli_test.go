@@ -28,7 +28,7 @@ func TestUnknown(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		gotOptionType, gotOptionValue, gotChomped, gotError := GetTypeForOpt(c.opt.first, c.opt.second)
+		gotOptionType, gotOptionValue, gotChomped, gotError := ArgToOption(c.opt.first, c.opt.second)
 		if gotOptionType != c.want.optionType {
 			t.Errorf("ParseOsArgs %q != %q", gotOptionType, c.want.optionType)
 		} else if gotOptionValue != c.want.value {
@@ -75,6 +75,18 @@ func TestGet(t *testing.T) {
 			WantedData{Arg, "foo", 1, ""},
 		},
 		{
+			OptionData{"-i", "foo"},
+			WantedData{Include, "foo", 2, ""},
+		},
+		{
+			OptionData{"--include", "foo"},
+			WantedData{Include, "foo", 2, ""},
+		},
+		{
+			OptionData{"--include=foo", ""},
+			WantedData{Include, "foo", 1, ""},
+		},
+		{
 			OptionData{"--help", ""},
 			WantedData{HelpFlag, "", 1, ""},
 		},
@@ -92,7 +104,7 @@ func TestGet(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		gotOptionType, gotOptionValue, gotChomped, _ := GetTypeForOpt(c.opt.first, c.opt.second)
+		gotOptionType, gotOptionValue, gotChomped, _ := ArgToOption(c.opt.first, c.opt.second)
 		if gotOptionType != c.want.optionType {
 			t.Errorf("ParseOsArgs %q != %q", gotOptionType, c.want.optionType)
 		} else if gotOptionValue != c.want.value {
@@ -214,17 +226,20 @@ func TestOrdering(t *testing.T) {
 		{
 			[]string{
 				"filename",
-				"source1.foo",
 				"-C", "~/foo",
+				"source1.foo",
 				"-b", "b_foo",
+				"-i", "i_foo",
 				"source2.foo",
 				"--arg=a_foobar",
 				"source3.foo",
 				"--build-arg", "b_bar",
+				"--include", "i_bar",
 				"source4.foo",
 				"--arg", "a_bar",
 				"source5.foo",
 				"--build-arg=b_foobar",
+				"--include=i_foobar",
 				"source6.foo",
 				"-a", "a_foo",
 			},
@@ -235,6 +250,9 @@ func TestOrdering(t *testing.T) {
 				BuildArg: {
 					"b_foo", "b_bar", "b_foobar",
 				},
+				Include: {
+					"i_foo", "i_bar", "i_foobar",
+				},
 				Source: {
 					"source1.foo",
 					"source2.foo",
@@ -242,6 +260,9 @@ func TestOrdering(t *testing.T) {
 					"source4.foo",
 					"source5.foo",
 					"source6.foo",
+				},
+				TargetDir: {
+					"~/foo",
 				},
 			},
 		},

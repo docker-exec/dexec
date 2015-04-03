@@ -14,7 +14,7 @@ const dexecImageTemplate = "dexec/%s"
 const dexecVolumeTemplate = "%s/%s:%s/%s:ro"
 
 func AddPrefix(inSlice []string, prefix string) []string {
-	outSlice := []string{}
+	var outSlice []string
 	for _, option := range inSlice {
 		outSlice = append(outSlice, []string{prefix, option}...)
 	}
@@ -28,7 +28,6 @@ func JoinStringSlices(slices ...[]string) []string {
 	}
 	return outSlice
 }
-
 
 var DockerVersion = func() string {
 	out, err := exec.Command("docker", "-v").Output()
@@ -110,8 +109,7 @@ func RunDexecContainer(image string, options map[OptionType][]string) {
 	}
 	absPath, _ := filepath.Abs(path)
 
-	dockerArgs := []string{}
-
+	var dockerArgs []string
 	for _, source := range append(options[Source], options[Include]...) {
 		dockerArgs = append(
 			dockerArgs,

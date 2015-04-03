@@ -13,7 +13,7 @@ const (
 	Arg         OptionType = iota
 	BuildArg    OptionType = iota
 	Source      OptionType = iota
-	Include		OptionType = iota
+	Include     OptionType = iota
 	TargetDir   OptionType = iota
 	HelpFlag    OptionType = iota
 	VersionFlag OptionType = iota
@@ -24,7 +24,7 @@ type CLI struct {
 	options  map[OptionType][]string
 }
 
-func GetTypeForOpt(opt string, next string) (OptionType, string, int, error) {
+func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	patternStandaloneA := regexp.MustCompile(`^-(a|-arg)$`)
 	patternStandaloneB := regexp.MustCompile(`^-(b|-build-arg)$`)
 	patternStandaloneI := regexp.MustCompile(`^-(i|-include)$`)
@@ -67,19 +67,20 @@ func ParseArgs(args []string) map[OptionType][]string {
 		return map[OptionType][]string{}
 	}
 
-	next := ""
+	var next string
 	if len(args) > 1 {
 		next = args[1]
 	}
-	t, v, c, _ := GetTypeForOpt(args[0], next)
 
-	if len(args) < c || c == 0 {
+	optionType, optionValue, nextIndex, _ := ArgToOption(args[0], next)
+
+	if len(args) < nextIndex || nextIndex == 0 {
 		return map[OptionType][]string{}
 	}
 
-	m := ParseArgs(args[c:])
-	m[t] = append([]string{v}, m[t]...)
-	return m
+	optionMap := ParseArgs(args[nextIndex:])
+	optionMap[optionType] = append([]string{optionValue}, optionMap[optionType]...)
+	return optionMap
 }
 
 func ParseOsArgs(args []string) CLI {
