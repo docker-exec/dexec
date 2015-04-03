@@ -30,13 +30,13 @@ func TestUnknown(t *testing.T) {
 	for _, c := range cases {
 		gotOptionType, gotOptionValue, gotChomped, gotError := GetTypeForOpt(c.opt.first, c.opt.second)
 		if gotOptionType != c.want.optionType {
-			t.Errorf("ParseOsArgsR %q != %q", gotOptionType, c.want.optionType)
+			t.Errorf("ParseOsArgs %q != %q", gotOptionType, c.want.optionType)
 		} else if gotOptionValue != c.want.value {
-			t.Errorf("ParseOsArgsR %q != %q", gotOptionValue, c.want.value)
+			t.Errorf("ParseOsArgs %q != %q", gotOptionValue, c.want.value)
 		} else if gotChomped != c.want.chomped {
-			t.Errorf("ParseOsArgsR %q != %q", gotChomped, c.want.chomped)
+			t.Errorf("ParseOsArgs %q != %q", gotChomped, c.want.chomped)
 		} else if gotError.Error() != c.want.errorMessage {
-			t.Errorf("ParseOsArgsR %q != %q", gotError.Error(), c.want.errorMessage)
+			t.Errorf("ParseOsArgs %q != %q", gotError.Error(), c.want.errorMessage)
 		}
 	}
 }
@@ -94,11 +94,11 @@ func TestGet(t *testing.T) {
 	for _, c := range cases {
 		gotOptionType, gotOptionValue, gotChomped, _ := GetTypeForOpt(c.opt.first, c.opt.second)
 		if gotOptionType != c.want.optionType {
-			t.Errorf("ParseOsArgsR %q != %q", gotOptionType, c.want.optionType)
+			t.Errorf("ParseOsArgs %q != %q", gotOptionType, c.want.optionType)
 		} else if gotOptionValue != c.want.value {
-			t.Errorf("ParseOsArgsR %q != %q", gotOptionValue, c.want.value)
+			t.Errorf("ParseOsArgs %q != %q", gotOptionValue, c.want.value)
 		} else if gotChomped != c.want.chomped {
-			t.Errorf("ParseOsArgsR %q != %q", gotChomped, c.want.chomped)
+			t.Errorf("ParseOsArgs %q != %q", gotChomped, c.want.chomped)
 		}
 	}
 }
@@ -114,7 +114,22 @@ func TestFilename(t *testing.T) {
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
 		if got.filename != c.want {
-			t.Errorf("ParseOsArgsR %q != %q", got.filename, c.want)
+			t.Errorf("ParseOsArgs %q != %q", got.filename, c.want)
+		}
+	}
+}
+
+func TestTargetDir(t *testing.T) {
+	cases := []struct {
+		osArgs []string
+		want   []string
+	}{
+		{[]string{"filename", "-C", "foo"}, []string{"foo"}},
+	}
+	for _, c := range cases {
+		got := ParseOsArgs(c.osArgs)
+		if !reflect.DeepEqual(got.options[TargetDir], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.options[TargetDir], c.want)
 		}
 	}
 }
@@ -182,6 +197,7 @@ func TestOrdering(t *testing.T) {
 			[]string{
 				"filename",
 				"source1.foo",
+				"-C", "~/foo",
 				"-b", "b_foo",
 				"source2.foo",
 				"--arg=a_foobar",
