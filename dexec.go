@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"github.com/codegangsta/cli"
 	"log"
 	"os"
 	"regexp"
@@ -13,8 +11,8 @@ func GetExtension(filename string) string {
 	return filenamePattern.FindStringSubmatch(filename)[1]
 }
 
-func main() {
-	extensionMap := map[string]string{
+var extensionDict = func() func(string) string {
+	innerMap := map[string]string{
 		"c":      "c",
 		"clj":    "clojure",
 		"coffee": "coffee",
@@ -40,69 +38,31 @@ func main() {
 		"scala":  "scala",
 		"sh":     "bash",
 	}
-
-	var AppHelpTemplate = `Name:
-    {{.Name}} - {{.Usage}}
-
-Usage:
-   {{.Name}} [options] [sources]
-
-Options:
-   {{range .Flags}}{{.}}
-   {{end}}
-`
-
-	cli.AppHelpTemplate = AppHelpTemplate
-
-	app := cli.NewApp()
-	app.Name = "dexec"
-	app.Usage = "Execute code in many languages with Docker!"
-	app.Version = "1.0.0-beta"
-	app.Author = "Andy Stanton"
-	app.EnableBashCompletion = true
-
-	argFlags := cli.StringSlice{}
-	buildArgFlags := cli.StringSlice{}
-
-	app.Flags = []cli.Flag{
-		cli.StringSliceFlag{
-			Name:  "arg, a",
-			Usage: "Arguments to pass to the program",
-			Value: &argFlags,
-		},
-		cli.StringSliceFlag{
-			Name:  "build-arg, b",
-			Usage: "Arguments to pass to the compiler (if the target language has one)",
-			Value: &buildArgFlags,
-		},
+	return func(key string) string {
+		return innerMap[key]
 	}
+}()
 
-	app.Action = func(c *cli.Context) {
-		found := IsDockerPresent()
-		running := IsDockerRunning()
 
-		if !found {
-			log.Fatal("Docker not found")
-		} else if !running {
-			log.Fatal("Docker not running")
-		} else if len(c.Args()) == 0 {
-			cli.ShowAppHelp(c)
+func main() {
+	found := IsDockerPresent()
+	running := IsDockerRunning()
+
+	if !found {
+		log.Fatal("Docker not found")
+	} else if !running {
+		log.Fatal("Docker not running")
+	} else {
+		options := ParseOsArgs(os.Args)
+
+		if len(options.options[VersionFlag]) != 0 {
+			PrintVersion()
+		} else if len(options.options[Source]) == 0 ||
+			len(options.options[HelpFlag]) != 0 {
+			PrintHelp()
 		} else {
-			sourceFile := c.Args()[0]
-
-			sources := c.Args()
-			fmt.Printf("%v\n", sources)
-
-			buildArgs := c.StringSlice("build-arg")
-			fmt.Printf("%v\n", buildArgs)
-
-			// imageName := extensionMap[GetExtension(sourceFile)]
-			imageName := extensionMap[GetExtension("blah.cpp")]
-			fmt.Printf(imageName)
-			fmt.Printf(sourceFile)
-			// RunDexecContainer(imageName, sourceFile, c.Args()[1:]...)
+			imageName := extensionDict(GetExtension(options.options[Source][0]))
+			RunDexecContainer(imageName, options.options)
 		}
 	}
-
-	app.Run(os.Args)
 }
