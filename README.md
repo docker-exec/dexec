@@ -44,7 +44,7 @@ $ dexec foo.cpp -i bar.hpp
 ### Support shebang in source files
 
 ```c++
-#!/usr/bin/dexec
+#!/usr/bin/env dexec
 #include <iostream>
 int main() {
     std::cout << "hello world" << std::endl;
