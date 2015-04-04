@@ -140,6 +140,6 @@ func DisplayHelp(filename string) {
 }
 
 // DisplayVersion prints the version information for the program.
-func DisplayVersion() {
-	fmt.Println("dexec 1.0.0-alpha")
+func DisplayVersion(filename string) {
+	fmt.Printf("%s 1.0.0-alpha", filename)
 }

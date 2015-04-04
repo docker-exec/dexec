@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strconv"
 )
@@ -125,42 +123,4 @@ func RunAnonymousContainer(image string, extraDockerArgs []string, entrypointArg
 	out.Stdout = os.Stdout
 	out.Stderr = os.Stderr
 	out.Run()
-}
-
-const dexecPath = "/tmp/dexec/build"
-const dexecImageTemplate = "dexec/%s"
-const dexecVolumeTemplate = "%s/%s:%s/%s:ro"
-
-// RunDexecContainer runs an anonymouse Docker container with a Docker Exec
-// image, mounting the specified sources and includes and passing the
-// list of sources and arguments to the entrypoint.
-func RunDexecContainer(dexecImage string, options map[OptionType][]string) {
-	path := "."
-	if len(options[TargetDir]) > 0 {
-		path = options[TargetDir][0]
-	}
-	absPath, _ := filepath.Abs(path)
-
-	var dockerArgs []string
-	for _, source := range append(options[Source], options[Include]...) {
-		dockerArgs = append(
-			dockerArgs,
-			[]string{
-				"-v",
-				fmt.Sprintf(dexecVolumeTemplate, absPath, source, dexecPath, source),
-			}...,
-		)
-	}
-
-	entrypointArgs := JoinStringSlices(
-		options[Source],
-		AddPrefix(options[BuildArg], "-b"),
-		AddPrefix(options[Arg], "-a"),
-	)
-
-	RunAnonymousContainer(
-		fmt.Sprintf(dexecImageTemplate, dexecImage),
-		dockerArgs,
-		entrypointArgs,
-	)
 }

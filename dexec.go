@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 )
 
@@ -47,6 +49,44 @@ var LookupExtensionByImage = func() func(string) string {
 	}
 }()
 
+const dexecPath = "/tmp/dexec/build"
+const dexecImageTemplate = "dexec/%s"
+const dexecVolumeTemplate = "%s/%s:%s/%s:ro"
+
+// RunDexecContainer runs an anonymouse Docker container with a Docker Exec
+// image, mounting the specified sources and includes and passing the
+// list of sources and arguments to the entrypoint.
+func RunDexecContainer(dexecImage string, options map[OptionType][]string) {
+	path := "."
+	if len(options[TargetDir]) > 0 {
+		path = options[TargetDir][0]
+	}
+	absPath, _ := filepath.Abs(path)
+
+	var dockerArgs []string
+	for _, source := range append(options[Source], options[Include]...) {
+		dockerArgs = append(
+			dockerArgs,
+			[]string{
+				"-v",
+				fmt.Sprintf(dexecVolumeTemplate, absPath, source, dexecPath, source),
+			}...,
+		)
+	}
+
+	entrypointArgs := JoinStringSlices(
+		options[Source],
+		AddPrefix(options[BuildArg], "-b"),
+		AddPrefix(options[Arg], "-a"),
+	)
+
+	RunAnonymousContainer(
+		fmt.Sprintf(dexecImageTemplate, dexecImage),
+		dockerArgs,
+		entrypointArgs,
+	)
+}
+
 func validate(cli CLI) bool {
 	if !IsDockerPresent() {
 		log.Fatal("Docker not found")
@@ -56,7 +96,7 @@ func validate(cli CLI) bool {
 
 	valid := false
 	if len(cli.options[VersionFlag]) != 0 {
-		DisplayVersion()
+		DisplayVersion(cli.filename)
 	} else if len(cli.options[Source]) == 0 ||
 		len(cli.options[HelpFlag]) != 0 ||
 		len(cli.options[TargetDir]) > 1 {
