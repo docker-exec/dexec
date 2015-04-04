@@ -33,6 +33,10 @@ const (
 	// relatively specified.
 	TargetDir OptionType = iota
 
+	// UpdateFlag indicates that the option specifies that Docker images should
+	// be manually updated before being used.
+	UpdateFlag OptionType = iota
+
 	// HelpFlag indicates that the option specifies the help flag.
 	HelpFlag OptionType = iota
 
@@ -59,6 +63,7 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	patternCombinationB := regexp.MustCompile(`^--build-arg=(.+)$`)
 	patternCombinationI := regexp.MustCompile(`^--include=(.+)$`)
 	patternSource := regexp.MustCompile(`^[^-_].+\..+`)
+	patternUpdateFlag := regexp.MustCompile(`^-(-update|u)$`)
 	patternHelpFlag := regexp.MustCompile(`^-(-help|h)$`)
 	patternVersionFlag := regexp.MustCompile(`^-(-version|v)$`)
 
@@ -77,6 +82,8 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return BuildArg, patternCombinationB.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationI.FindStringIndex(opt) != nil:
 		return Include, patternCombinationI.FindStringSubmatch(opt)[1], 1, nil
+	case patternUpdateFlag.FindStringIndex(opt) != nil:
+		return UpdateFlag, "", 1, nil
 	case patternHelpFlag.FindStringIndex(opt) != nil:
 		return HelpFlag, "", 1, nil
 	case patternVersionFlag.FindStringIndex(opt) != nil:
@@ -135,6 +142,7 @@ func DisplayHelp(filename string) {
 	fmt.Printf("\t%-50s%s\n", "-C <dir>", "Specify source directory")
 	fmt.Printf("\t%-50s%s\n", "--arg, -a <argument>", "Pass <argument> to the executing code")
 	fmt.Printf("\t%-50s%s\n", "--build-arg, -b <build argument>", "Pass <build argument> to compiler")
+	fmt.Printf("\t%-50s%s\n", "--update, -u", "Update")
 	fmt.Printf("\t%-50s%s\n", "--help, -h", "Show help")
 	fmt.Printf("\t%-50s%s\n", "--version, -v", "Display version info")
 }

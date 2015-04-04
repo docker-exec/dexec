@@ -57,6 +57,8 @@ const dexecVolumeTemplate = "%s/%s:%s/%s:ro"
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
 func RunDexecContainer(dexecImage string, options map[OptionType][]string) {
+	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage)
+
 	path := "."
 	if len(options[TargetDir]) > 0 {
 		path = options[TargetDir][0]
@@ -80,8 +82,12 @@ func RunDexecContainer(dexecImage string, options map[OptionType][]string) {
 		AddPrefix(options[Arg], "-a"),
 	)
 
+	if len(options[UpdateFlag]) > 0 {
+		DockerPull(dockerImage)
+	}
+
 	RunAnonymousContainer(
-		fmt.Sprintf(dexecImageTemplate, dexecImage),
+		dockerImage,
 		dockerArgs,
 		entrypointArgs,
 	)

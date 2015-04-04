@@ -52,8 +52,12 @@ var DockerInfo = func() string {
 
 // DockerPull shells out the command 'docker pull {{image}}' where image is
 // the name of a Docker image to retrieve from the remote Docker repository.
-var DockerPull = func(image string) error {
-	return nil
+var DockerPull = func(image string) {
+	out := exec.Command("docker", "pull", image)
+	out.Stdin = os.Stdin
+	out.Stdout = os.Stderr
+	out.Stderr = os.Stderr
+	out.Run()
 }
 
 // ExtractDockerVersion takes a Docker version string in the format:
