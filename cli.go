@@ -128,7 +128,7 @@ func DisplayHelp(filename string) {
 	fmt.Printf("\t%s - Execute code in many languages with Docker!\n", filename)
 	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Println("\tdexec [options]")
+	fmt.Printf("\t%s [options]\n", filename)
 	fmt.Println()
 	fmt.Println("Options:")
 	fmt.Printf("\t%-50s%s\n", "<source file>", "Execute source file")
