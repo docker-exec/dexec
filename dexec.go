@@ -6,11 +6,15 @@ import (
 	"regexp"
 )
 
+// ExtractFileExtension extracts the extension from a filename. This is defined
+// as the remainder of the string after the last '.'.
 func ExtractFileExtension(filename string) string {
 	filenamePattern := regexp.MustCompile(`.*\.(.*)`)
 	return filenamePattern.FindStringSubmatch(filename)[1]
 }
 
+// LookupExtensionByImage is a closure storing a dictionary mapping source
+// extensions to the names of Docker Exec images.
 var LookupExtensionByImage = func() func(string) string {
 	innerMap := map[string]string{
 		"c":      "c",

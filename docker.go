@@ -9,10 +9,9 @@ import (
 	"strconv"
 )
 
-const dexecPath = "/tmp/dexec/build"
-const dexecImageTemplate = "dexec/%s"
-const dexecVolumeTemplate = "%s/%s:%s/%s:ro"
-
+// AddPrefix takes a string slice and returns a new string slice
+// with the supplied prefix inserted before every string in the
+// original slice.
 func AddPrefix(inSlice []string, prefix string) []string {
 	var outSlice []string
 	for _, option := range inSlice {
@@ -21,6 +20,8 @@ func AddPrefix(inSlice []string, prefix string) []string {
 	return outSlice
 }
 
+// JoinStringSlices takes an arbitrary number of string slices
+// and concatenates them in the order supplied.
 func JoinStringSlices(slices ...[]string) []string {
 	var outSlice []string
 	for _, slice := range slices {
@@ -29,6 +30,8 @@ func JoinStringSlices(slices ...[]string) []string {
 	return outSlice
 }
 
+// DockerVersion shells out the command 'docker -v', returning the version
+// information if the command is successful, and panicking if not.
 var DockerVersion = func() string {
 	out, err := exec.Command("docker", "-v").Output()
 	if err != nil {
@@ -38,6 +41,8 @@ var DockerVersion = func() string {
 	}
 }
 
+// DockerInfo shells out the command 'docker -info', returning the information
+// if the command is successful and panicking if not.
 var DockerInfo = func() string {
 	out, err := exec.Command("docker", "info").Output()
 	if err != nil {
@@ -47,6 +52,15 @@ var DockerInfo = func() string {
 	}
 }
 
+// DockerPull shells out the command 'docker pull {{image}}' where image is
+// the name of a Docker image to retrieve from the remote Docker repository.
+var DockerPull = func(image string) error {
+	return nil
+}
+
+// ExtractDockerVersion takes a Docker version string in the format:
+// 'Docker version 1.0.0, build abcdef0', extracts the major, minor and patch
+// versions and returns these as a tuple. If the string does not match, panic.
 func ExtractDockerVersion(version string) (int, int, int) {
 	dockerVersionPattern := regexp.MustCompile(`^Docker version (\d+)\.(\d+)\.(\d+), build [a-z0-9]{7}`)
 
@@ -56,11 +70,14 @@ func ExtractDockerVersion(version string) (int, int, int) {
 		minor, _ := strconv.Atoi(match[2])
 		patch, _ := strconv.Atoi(match[3])
 		return major, minor, patch
-	} else {
-		panic("Did not match Docker version string")
 	}
+	panic("Did not match Docker version string")
 }
 
+// IsDockerPresent tests for the presence of Docker by invoking DockerVersion
+// to get the version of Docker if available, and then attempting to parse the
+// version with ExtractDocker version. This function will return true only
+// if neither of these functions panics.
 func IsDockerPresent() bool {
 	present := true
 	defer func() {
@@ -72,6 +89,9 @@ func IsDockerPresent() bool {
 	return present
 }
 
+// IsDockerRunning tests whether Docker is running by invoking DockerInfo
+// which will only return information if Docker is up. This function will
+// return true if DockerInfo does not panic.
 func IsDockerRunning() bool {
 	running := true
 	defer func() {
@@ -83,6 +103,11 @@ func IsDockerRunning() bool {
 	return running
 }
 
+// RunAnonymousContainer shells out the command:
+// 'docker run --rm {{extraDockerArgs}} -t {{image}} {{entrypointArgs}}'.
+// This will run an anonymouse Docker container with the specified image, with
+// any extra arguments to pass to Docker, for example directories to mount,
+// as well as arguments to pass to the image's entrypoint.
 func RunAnonymousContainer(image string, extraDockerArgs []string, entrypointArgs []string) {
 	baseDockerArgs := []string{"run", "--rm"}
 	imageDockerArgs := []string{"-t", image}
@@ -102,7 +127,14 @@ func RunAnonymousContainer(image string, extraDockerArgs []string, entrypointArg
 	out.Run()
 }
 
-func RunDexecContainer(image string, options map[OptionType][]string) {
+const dexecPath = "/tmp/dexec/build"
+const dexecImageTemplate = "dexec/%s"
+const dexecVolumeTemplate = "%s/%s:%s/%s:ro"
+
+// RunDexecContainer runs an anonymouse Docker container with a Docker Exec
+// image, mounting the specified sources and includes and passing the
+// list of sources and arguments to the entrypoint.
+func RunDexecContainer(dexecImage string, options map[OptionType][]string) {
 	path := "."
 	if len(options[TargetDir]) > 0 {
 		path = options[TargetDir][0]
@@ -127,7 +159,7 @@ func RunDexecContainer(image string, options map[OptionType][]string) {
 	)
 
 	RunAnonymousContainer(
-		fmt.Sprintf(dexecImageTemplate, image),
+		fmt.Sprintf(dexecImageTemplate, dexecImage),
 		dockerArgs,
 		entrypointArgs,
 	)

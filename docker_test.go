@@ -3,13 +3,38 @@ package main
 import (
 	"reflect"
 	"testing"
-	"./testutils"
 )
+
+// Restorer holds a function that can be used
+// to restore some previous state.
+type Restorer func()
+
+// Restore restores some previous state.
+func (r Restorer) Restore() {
+	r()
+}
+
+// Patch sets the value pointed to by the given destination to the given
+// value, and returns a function to restore it to its original value.  The
+// value must be assignable to the element type of the destination.
+func Patch(dest, value interface{}) Restorer {
+	destv := reflect.ValueOf(dest).Elem()
+	oldv := reflect.New(destv.Type()).Elem()
+	oldv.Set(destv)
+	valuev := reflect.ValueOf(value)
+	if !valuev.IsValid() {
+		valuev = reflect.Zero(destv.Type())
+	}
+	destv.Set(valuev)
+	return func() {
+		destv.Set(oldv)
+	}
+}
 
 func TestAddPrefix(t *testing.T) {
 	cases := []struct {
 		inSlice []string
-		prefix	string
+		prefix  string
 		want    []string
 	}{
 		{
@@ -29,7 +54,7 @@ func TestAddPrefix(t *testing.T) {
 func TestJoinStringSlices(t *testing.T) {
 	cases := []struct {
 		inSlices [][]string
-		want    []string
+		want     []string
 	}{
 		{
 			[][]string{[]string{"foo"}, []string{"bar"}, []string{"foobar"}},
@@ -69,33 +94,32 @@ func TestIsDockerPresent(t *testing.T) {
 		{"Mangled version string", false},
 	}
 	for _, c := range cases {
-		defer testutils.Patch(&DockerVersion, func() string {
+		defer Patch(&DockerVersion, func() string {
 			return c.version
 		}).Restore()
 
 		got := IsDockerPresent()
 		if got != c.want {
-			t.Errorf("IsDockerPresent() for version %q == %q, want %q", c.version, got, c.want)
+			t.Errorf("IsDockerPresent() for version %q == %q, want %v", c.version, got, c.want)
 		}
 	}
 }
 
 func TestIsDockerRunning(t *testing.T) {
 	cases := []struct {
-		output  string
-		want    bool
+		output string
+		want   bool
 	}{
 		{"Docker info string", true},
 	}
 	for _, c := range cases {
-		defer testutils.Patch(&DockerInfo, func() string {
+		defer Patch(&DockerInfo, func() string {
 			return c.output
 		}).Restore()
 
 		got := IsDockerRunning()
 		if got != c.want {
-			t.Errorf("IsDockerRunning() for info string %q == %q, want %q", c.output, got, c.want)
+			t.Errorf("IsDockerRunning() for info string %q == %q, want %v", c.output, got, c.want)
 		}
 	}
 }
-
