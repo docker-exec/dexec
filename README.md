@@ -33,12 +33,18 @@ $ dexec foo.cpp -a hello -a world -a 'hello world'
 $ dexec -C /path/to/sources foo.cpp bar.cpp
 ```
 
-### Include files and folders mounted in Docker container without passing to compiler
+### Include files and folders mounted in Docker container
 
 ```sh
 $ dexec foo.cpp --include=bar.hpp
 $ dexec foo.cpp --include bar.hpp
 $ dexec foo.cpp -i bar.hpp
+```
+
+```sh
+$ dexec foo.cpp --include=.
+$ dexec foo.cpp --include .
+$ dexec foo.cpp -i .
 ```
 
 ### Support shebang in source files
@@ -57,4 +63,3 @@ then
 $ chmod +x foo.cpp
 $ ./foo.cpp
 ```
-
