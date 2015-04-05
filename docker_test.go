@@ -57,7 +57,7 @@ func TestJoinStringSlices(t *testing.T) {
 		want     []string
 	}{
 		{
-			[][]string{[]string{"foo"}, []string{"bar"}, []string{"foobar"}},
+			[][]string{{"foo"}, {"bar"}, {"foobar"}},
 			[]string{"foo", "bar", "foobar"},
 		},
 	}
@@ -100,7 +100,7 @@ func TestIsDockerPresent(t *testing.T) {
 
 		got := IsDockerPresent()
 		if got != c.want {
-			t.Errorf("IsDockerPresent() for version %q == %q, want %v", c.version, got, c.want)
+			t.Errorf("IsDockerPresent() for version %q == %v, want %v", c.version, got, c.want)
 		}
 	}
 }
@@ -119,7 +119,7 @@ func TestIsDockerRunning(t *testing.T) {
 
 		got := IsDockerRunning()
 		if got != c.want {
-			t.Errorf("IsDockerRunning() for info string %q == %q, want %v", c.output, got, c.want)
+			t.Errorf("IsDockerRunning() for info string %q == %v, want %v", c.output, got, c.want)
 		}
 	}
 }
