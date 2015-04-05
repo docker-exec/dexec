@@ -11,8 +11,13 @@ import (
 // ExtractFileExtension extracts the extension from a filename. This is defined
 // as the remainder of the string after the last '.'.
 func ExtractFileExtension(filename string) string {
-	filenamePattern := regexp.MustCompile(`.*\.(.*)`)
-	return filenamePattern.FindStringSubmatch(filename)[1]
+	patternPermission := regexp.MustCompile(`.*\.(.*):.*`)
+	permissionMatch := patternPermission.FindStringSubmatch(filename)
+	if len(permissionMatch) > 0 {
+		return permissionMatch[1]
+	}
+	patternFilename := regexp.MustCompile(`.*\.(.*)`)
+	return patternFilename.FindStringSubmatch(filename)[1]
 }
 
 // LookupExtensionByImage is a closure storing a dictionary mapping source
@@ -51,7 +56,24 @@ var LookupExtensionByImage = func() func(string) string {
 
 const dexecPath = "/tmp/dexec/build"
 const dexecImageTemplate = "dexec/%s"
-const dexecVolumeTemplate = "%s/%s:%s/%s:ro"
+const dexecVolumeTemplate = "%s/%s:%s/%s"
+
+// ExtractBasenameAndPermission takes an include string and splits it into
+// its file or folder name and the permission string if present or the empty
+// string if not.
+func ExtractBasenameAndPermission(path string) (string, string) {
+	pathPattern := regexp.MustCompile("([\\w.-]+)(:(rw|ro))")
+	match := pathPattern.FindStringSubmatch(path)
+
+	basename := path
+	var permission string
+
+	if len(match) == 4 {
+		basename = match[1]
+		permission = match[2]
+	}
+	return basename, permission
+}
 
 // RunDexecContainer runs an anonymouse Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
@@ -67,17 +89,25 @@ func RunDexecContainer(dexecImage string, options map[OptionType][]string) {
 
 	var dockerArgs []string
 	for _, source := range append(options[Source], options[Include]...) {
+		basename, _ := ExtractBasenameAndPermission(source)
+
 		dockerArgs = append(
 			dockerArgs,
 			[]string{
 				"-v",
-				fmt.Sprintf(dexecVolumeTemplate, absPath, source, dexecPath, source),
+				fmt.Sprintf(dexecVolumeTemplate, absPath, basename, dexecPath, source),
 			}...,
 		)
 	}
 
+	var sourceBasenames []string
+	for _, source := range options[Source] {
+		basename, _ := ExtractBasenameAndPermission(source)
+		sourceBasenames = append(sourceBasenames, []string{basename}...)
+	}
+
 	entrypointArgs := JoinStringSlices(
-		options[Source],
+		sourceBasenames,
 		AddPrefix(options[BuildArg], "-b"),
 		AddPrefix(options[Arg], "-a"),
 	)
