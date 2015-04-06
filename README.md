@@ -1,4 +1,4 @@
-# dexec [![Build Status](https://travis-ci.org/docker-exec/dexec.svg?branch=master)](https://travis-ci.org/docker-exec/dexec)  [ ![Download](https://api.bintray.com/packages/dexec/generic/dexec/images/download.svg) ](https://bintray.com/dexec/generic/dexec/_latestVersion)
+# dexec [![Build Status](https://travis-ci.org/docker-exec/dexec.svg?branch=master)](https://travis-ci.org/docker-exec/dexec)  [ ![Download](https://api.bintray.com/packages/dexec/release/dexec/images/download.svg) ](https://bintray.com/dexec/release/dexec/_latestVersion)
 
 A command line utility for executing code in many different languages using the Docker Exec images, written in Go.
 
@@ -133,4 +133,4 @@ $ ./foo.cpp
 * [Docker Exec GitHub Page](https://docker-exec.github.io/)
 * [Docker Exec GitHub Repositories](https://github.com/docker-exec)
 * [Docker Exec Images on Docker Hub](https://hub.docker.com/repos/dexec/)
-* [dexec on Bintray](https://bintray.com/dexec/generic/dexec/view)
+* [dexec on Bintray](https://bintray.com/dexec/release/dexec/view)
