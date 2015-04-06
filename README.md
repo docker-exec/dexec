@@ -2,6 +2,8 @@
 
 A command line utility for executing source code via the Docker Exec images, written in Go.
 
+![dexec demo animation](https://docker-exec.github.io/images/dexec-short.gif)
+
 ## Installation
 
 ### Using Bintray
