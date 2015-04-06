@@ -4,7 +4,7 @@ A command line utility for executing source code via the Docker Exec images. It 
 
 ## Installation
 
-### Bintray
+### Using Bintray
 
 Navigate to the [dexec page on Bintray](https://bintray.com/dexec/generic/dexec/_latestVersion) and download the appropriate binary for your operating system.
 
