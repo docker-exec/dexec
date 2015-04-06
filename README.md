@@ -1,16 +1,24 @@
 # dexec [![Build Status](https://travis-ci.org/docker-exec/dexec.svg?branch=master)](https://travis-ci.org/docker-exec/dexec)  [ ![Download](https://api.bintray.com/packages/dexec/generic/dexec/images/download.svg) ](https://bintray.com/dexec/generic/dexec/_latestVersion)
 
-A command line utility for executing source code via the Docker Exec images. It is written in Go.
+A command line utility for executing source code via the Docker Exec images, written in Go.
 
 ## Installation
 
 ### Using Bintray
 
-Navigate to the [dexec page on Bintray](https://bintray.com/dexec/generic/dexec/_latestVersion) and download the appropriate binary for your operating system.
+Download the appropriate binary for your OS and architecture, then unzip or untar the file and move the ```dexec``` executable to where it can be found on your PATH.
 
-Unzip or untar the file and move the ```dexec``` executable to where it can be found on your PATH.
+| OS      | 64-bit | 32-bit |
+| ------- | ------ | ------ |
+| Linux   |  [64-bit](https://bintray.com/artifact/download/dexec/generic/dexec_1.0.0-alpha_linux_amd64.tar.gz) | [32-bit](https://bintray.com/artifact/download/dexec/generic/dexec_1.0.0-alpha_linux_386.tar.gz) |
+| Mac     |  [64-bit](https://bintray.com/artifact/download/dexec/generic/dexec_1.0.0-alpha_darwin_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/generic/dexec_1.0.0-alpha_darwin_386.zip) |
+| Windows |  [64-bit](https://bintray.com/artifact/download/dexec/generic/dexec_1.0.0-alpha_windows_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/generic/dexec_1.0.0-alpha_windows_386.zip) |
+
+Binaries for other distributions are available on [Bintray](https://bintray.com/dexec/generic/dexec/1.0.0-alpha).
 
 ### Using Go
+
+If you have Go installed and configured correctly, you can install ```dexec``` with the ```go get``` command.
 
 ```sh
 $ go get github.com/docker-exec/dexec
@@ -19,6 +27,13 @@ $ go get github.com/docker-exec/dexec
 ## Reference
 
 These examples use a .cpp source file, but any of the supported languages can be used instead. Arguments can be passed in any order, using any style of the acceptable switch styles described.
+
+The application provides help and version information as follows:
+
+```sh
+$ dexec --version
+$ dexec --help
+```
 
 ### Pass source files to execute
 
@@ -110,3 +125,10 @@ then
 $ chmod +x foo.cpp
 $ ./foo.cpp
 ```
+
+## See also
+
+* [Docker Exec GitHub Page](https://docker-exec.github.io/)
+* [Docker Exec GitHub Repositories](https://github.com/docker-exec)
+* [Docker Exec Images on Docker Hub](https://hub.docker.com/repos/dexec/)
+* [dexec on Bintray](https://bintray.com/dexec/generic/dexec/view)
