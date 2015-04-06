@@ -1,11 +1,10 @@
 {
     "PackageVersion": "1.0.0",
-    "PrereleaseInfo": "alpha",
     "ConfigVersion": "0.9",
     "TaskSettings": {
         "bintray": {
             "downloadspage": "bintray.md",
-            "repository": "generic",
+            "repository": "release",
             "package": "dexec",
             "user": "docker-exec-bot",
             "subject": "dexec"
