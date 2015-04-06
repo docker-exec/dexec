@@ -1,6 +1,6 @@
 # dexec [![Build Status](https://travis-ci.org/docker-exec/dexec.svg?branch=master)](https://travis-ci.org/docker-exec/dexec)  [ ![Download](https://api.bintray.com/packages/dexec/generic/dexec/images/download.svg) ](https://bintray.com/dexec/generic/dexec/_latestVersion)
 
-A command line utility for executing source code via the Docker Exec images, written in Go.
+A command line utility for executing code in many different languages using the Docker Exec images, written in Go.
 
 ![dexec demo animation](https://docker-exec.github.io/images/dexec-short.gif)
 
