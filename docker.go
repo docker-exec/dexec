@@ -80,29 +80,29 @@ func ExtractDockerVersion(version string) (int, int, int) {
 // to get the version of Docker if available, and then attempting to parse the
 // version with ExtractDocker version. This function will return true only
 // if neither of these functions panics.
-func IsDockerPresent() bool {
-	present := true
+func IsDockerPresent() (present bool) {
+	present = true
 	defer func() {
 		if r := recover(); r != nil {
 			present = false
 		}
 	}()
 	ExtractDockerVersion(DockerVersion())
-	return present
+	return
 }
 
 // IsDockerRunning tests whether Docker is running by invoking DockerInfo
 // which will only return information if Docker is up. This function will
 // return true if DockerInfo does not panic.
-func IsDockerRunning() bool {
-	running := true
+func IsDockerRunning() (running bool) {
+	running = true
 	defer func() {
 		if r := recover(); r != nil {
 			running = false
 		}
 	}()
 	DockerInfo()
-	return running
+	return
 }
 
 // RunAnonymousContainer shells out the command:
