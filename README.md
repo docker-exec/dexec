@@ -107,11 +107,11 @@ $ dexec foo.cpp -u
 $ dexec foo.cpp --update
 ```
 
-### Make executable source with shebang
+### Make executable source with hashbang
 
-```dexec``` can be used to make source code executable by adding a shebang that invokes it at the top of a source file.
+```dexec``` can be used to make source code executable by adding a hashbang that invokes it at the top of a source file.
 
-The shebang is stripped out at execution time but the original source containing the shebang preserved.
+The hashbang is stripped out at execution time but the original source containing the hashbang preserved.
 
 ```c++
 #!/usr/bin/env dexec
