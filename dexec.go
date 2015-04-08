@@ -83,7 +83,7 @@ func ExtractBasenameAndPermission(path string) (string, string) {
 	return basename, permission
 }
 
-// RunDexecContainer runs an anonymouse Docker container with a Docker Exec
+// RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
 func RunDexecContainer(dexecImage DexecImage, options map[OptionType][]string) {
