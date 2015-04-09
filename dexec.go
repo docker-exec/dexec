@@ -28,34 +28,55 @@ type DexecImage struct {
 	version   string
 }
 
+// LookupImageByOverride takes an image that has been specified by the user
+// to use instead of the one in the extension map. This function returns a
+// DexecImage struct containing the image name & version, as well as the
+// file extension that was passed in.
+func LookupImageByOverride(image string, extension string) DexecImage {
+	patternImage := regexp.MustCompile(`(.*):(.*)`)
+	imageMatch := patternImage.FindStringSubmatch(image)
+	if len(imageMatch) > 0 {
+		return DexecImage{
+			extension,
+			imageMatch[1],
+			imageMatch[2],
+		}
+	}
+	return DexecImage{
+		extension,
+		image,
+		"latest",
+	}
+}
+
 // LookupImageByExtension is a closure storing a dictionary mapping source
 // extensions to the names and versions of Docker Exec images.
 var LookupImageByExtension = func() func(string) DexecImage {
 	innerMap := map[string]DexecImage{
-		"c":      {"c", "c", "1.0.0"},
-		"clj":    {"clj", "clojure", "1.0.0"},
-		"coffee": {"coffee", "coffee", "1.0.0"},
-		"cpp":    {"cpp", "cpp", "1.0.0"},
-		"cs":     {"cs", "csharp", "1.0.0"},
-		"d":      {"d", "d", "1.0.0"},
-		"erl":    {"erl", "erlang", "1.0.0"},
-		"fs":     {"fs", "fsharp", "1.0.0"},
-		"go":     {"go", "go", "1.0.0"},
-		"groovy": {"groovy", "groovy", "1.0.0"},
-		"hs":     {"hs", "haskell", "1.0.0"},
-		"java":   {"java", "java", "1.0.0"},
-		"lisp":   {"lisp", "lisp", "1.0.0"},
-		"js":     {"js", "node", "1.0.0"},
-		"m":      {"m", "objc", "1.0.0"},
-		"ml":     {"ml", "ocaml", "1.0.0"},
-		"pl":     {"pl", "perl", "1.0.0"},
-		"php":    {"php", "php", "1.0.0"},
-		"py":     {"py", "python", "1.0.0"},
-		"rkt":    {"rkt", "racket", "1.0.0"},
-		"rb":     {"rb", "ruby", "1.0.0"},
-		"rs":     {"rs", "rust", "1.0.0"},
-		"scala":  {"scala", "scala", "1.0.0"},
-		"sh":     {"sh", "bash", "1.0.0"},
+		"c":      {"c", "dexec/c", "1.0.0"},
+		"clj":    {"clj", "dexec/clojure", "1.0.0"},
+		"coffee": {"coffee", "dexec/coffee", "1.0.0"},
+		"cpp":    {"cpp", "dexec/cpp", "1.0.0"},
+		"cs":     {"cs", "dexec/csharp", "1.0.0"},
+		"d":      {"d", "dexec/d", "1.0.0"},
+		"erl":    {"erl", "dexec/erlang", "1.0.0"},
+		"fs":     {"fs", "dexec/fsharp", "1.0.0"},
+		"go":     {"go", "dexec/go", "1.0.0"},
+		"groovy": {"groovy", "dexec/groovy", "1.0.0"},
+		"hs":     {"hs", "dexec/haskell", "1.0.0"},
+		"java":   {"java", "dexec/java", "1.0.0"},
+		"lisp":   {"lisp", "dexec/lisp", "1.0.0"},
+		"js":     {"js", "dexec/node", "1.0.0"},
+		"m":      {"m", "dexec/objc", "1.0.0"},
+		"ml":     {"ml", "dexec/ocaml", "1.0.0"},
+		"pl":     {"pl", "dexec/perl", "1.0.0"},
+		"php":    {"php", "dexec/php", "1.0.0"},
+		"py":     {"py", "dexec/python", "1.0.0"},
+		"rkt":    {"rkt", "dexec/racket", "1.0.0"},
+		"rb":     {"rb", "dexec/ruby", "1.0.0"},
+		"rs":     {"rs", "dexec/rust", "1.0.0"},
+		"scala":  {"scala", "dexec/scala", "1.0.0"},
+		"sh":     {"sh", "dexec/bash", "1.0.0"},
 	}
 	return func(key string) DexecImage {
 		return innerMap[key]
@@ -63,7 +84,7 @@ var LookupImageByExtension = func() func(string) DexecImage {
 }()
 
 const dexecPath = "/tmp/dexec/build"
-const dexecImageTemplate = "dexec/%s:%s"
+const dexecImageTemplate = "%s:%s"
 const dexecVolumeTemplate = "%s/%s:%s/%s"
 
 // ExtractBasenameAndPermission takes an include string and splits it into
@@ -143,7 +164,8 @@ func validate(cli CLI) bool {
 		DisplayVersion(cli.filename)
 	} else if len(cli.options[Source]) == 0 ||
 		len(cli.options[HelpFlag]) != 0 ||
-		len(cli.options[TargetDir]) > 1 {
+		len(cli.options[TargetDir]) > 1 ||
+		len(cli.options[SpecifyImage]) > 1 {
 		DisplayHelp(cli.filename)
 	} else {
 		valid = true
@@ -155,8 +177,13 @@ func main() {
 	cli := ParseOsArgs(os.Args)
 
 	if validate(cli) {
+		extension := ExtractFileExtension(cli.options[Source][0])
+		image := LookupImageByExtension(extension)
+		if len(cli.options[SpecifyImage]) == 1 {
+			image = LookupImageByOverride(cli.options[SpecifyImage][0], extension)
+		}
 		RunDexecContainer(
-			LookupImageByExtension(ExtractFileExtension(cli.options[Source][0])),
+			image,
 			cli.options,
 		)
 	}

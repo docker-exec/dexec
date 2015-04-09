@@ -18,6 +18,30 @@ func TestExtractFileExtension(t *testing.T) {
 	}
 }
 
+func TestLookupImageByOverride(t *testing.T) {
+	cases := []struct {
+		image         string
+		extension     string
+		wantExtension string
+		wantImage     string
+		wantVersion   string
+	}{
+		{"dexec/cpp", "c", "c", "cpp", "latest"},
+		{"dexec/some-language", "ext", "ext", "some-language", "latest"},
+		{"dexec/some-language:1.2.3", "ext", "ext", "some-language", "1.2.3"},
+	}
+	for _, c := range cases {
+		got := LookupImageByOverride(c.image, c.extension)
+		if got.extension != c.wantExtension {
+			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, got.image, c.wantImage)
+		} else if got.extension != c.wantExtension {
+			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, got.extension, c.wantExtension)
+		} else if got.version != c.wantVersion {
+			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, got.version, c.wantVersion)
+		}
+	}
+}
+
 func TestLookupImageByExtension(t *testing.T) {
 	cases := []struct {
 		extension     string
