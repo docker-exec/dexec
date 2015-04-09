@@ -70,7 +70,7 @@ $ dexec foo.cpp -a hello -a world -a 'hello world'
 
 ### Specify location of source files
 
-By default, dexec assumes the sources are in the directory from which it is being invoked from. It is possible to override the working directory by passing the ```-C``` flag.
+By default, ```dexec``` assumes the sources are in the directory from which it is being invoked from. It is possible to override the working directory by passing the ```-C``` flag.
 
 ```sh
 $ dexec -C /path/to/sources foo.cpp bar.cpp
@@ -97,6 +97,18 @@ $ dexec foo.cpp -i .
 Files and directories are relative to either the current working directory, or the directory specified with the ```-C``` flag.
 
 As with sources, included files and directories are mounted using the default Docker mount permissions (rw) and can be specified by appending :ro or :rw to the source file.
+
+### Override the image used by dexec
+
+```dexec``` stores a map of file extensions to Docker images and uses this to look up the right image to run for a given source file. This can be overridden in the following way:
+
+```sh
+$ dexec foo.c --specify-image=dexec/cpp
+$ dexec foo.c --specify-image dexec/cpp
+$ dexec foo.c -s dexec/cpp
+```
+
+If no image version is specified, "latest" is used.
 
 ### Force dexec to pull latest version of image
 

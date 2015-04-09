@@ -28,6 +28,10 @@ const (
 	// executing code.
 	Include OptionType = iota
 
+	// SpecifyImage indicates that the option value should be used to
+	// override the image worked out based on the file extension.
+	SpecifyImage OptionType = iota
+
 	// TargetDir indicates that the option specifies a custom location (i.e.
 	// not the current working directory) to which the sources are
 	// relatively specified.
@@ -58,10 +62,12 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	patternStandaloneA := regexp.MustCompile(`^-(a|-arg)$`)
 	patternStandaloneB := regexp.MustCompile(`^-(b|-build-arg)$`)
 	patternStandaloneI := regexp.MustCompile(`^-(i|-include)$`)
+	patternStandaloneS := regexp.MustCompile(`^-(s|-specify-image)$`)
 	patternStandaloneC := regexp.MustCompile(`^-C$`)
 	patternCombinationA := regexp.MustCompile(`^--arg=(.+)$`)
 	patternCombinationB := regexp.MustCompile(`^--build-arg=(.+)$`)
 	patternCombinationI := regexp.MustCompile(`^--include=(.+)$`)
+	patternCombinationS := regexp.MustCompile(`^--specify-image=(.+)$`)
 	patternSource := regexp.MustCompile(`^[^-_].+\..+`)
 	patternUpdateFlag := regexp.MustCompile(`^-(-update|u)$`)
 	patternHelpFlag := regexp.MustCompile(`^-(-help|h)$`)
@@ -74,6 +80,8 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return BuildArg, next, 2, nil
 	case patternStandaloneI.FindStringIndex(opt) != nil:
 		return Include, next, 2, nil
+	case patternStandaloneS.FindStringIndex(opt) != nil:
+		return SpecifyImage, next, 2, nil
 	case patternStandaloneC.FindStringIndex(opt) != nil:
 		return TargetDir, next, 2, nil
 	case patternCombinationA.FindStringIndex(opt) != nil:
@@ -82,6 +90,8 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return BuildArg, patternCombinationB.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationI.FindStringIndex(opt) != nil:
 		return Include, patternCombinationI.FindStringSubmatch(opt)[1], 1, nil
+	case patternCombinationS.FindStringIndex(opt) != nil:
+		return SpecifyImage, patternCombinationS.FindStringSubmatch(opt)[1], 1, nil
 	case patternUpdateFlag.FindStringIndex(opt) != nil:
 		return UpdateFlag, "", 1, nil
 	case patternHelpFlag.FindStringIndex(opt) != nil:
@@ -142,6 +152,8 @@ func DisplayHelp(filename string) {
 	fmt.Printf("\t%-50s%s\n", "-C <dir>", "Specify source directory")
 	fmt.Printf("\t%-50s%s\n", "--arg, -a <argument>", "Pass <argument> to the executing code")
 	fmt.Printf("\t%-50s%s\n", "--build-arg, -b <build argument>", "Pass <build argument> to compiler")
+	fmt.Printf("\t%-50s%s\n", "--include, -i <file|path>", "Mount local <file|path> in dexec container")
+	fmt.Printf("\t%-50s%s\n", "--specify-image, -s <docker image>", "Override the image used with <docker image>")
 	fmt.Printf("\t%-50s%s\n", "--update, -u", "Update")
 	fmt.Printf("\t%-50s%s\n", "--help, -h", "Show help")
 	fmt.Printf("\t%-50s%s\n", "--version, -v", "Display version info")

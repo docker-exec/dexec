@@ -87,6 +87,18 @@ func TestGet(t *testing.T) {
 			WantedData{Include, "foo", 1, ""},
 		},
 		{
+			OptionData{"-s", "foo"},
+			WantedData{SpecifyImage, "foo", 2, ""},
+		},
+		{
+			OptionData{"--specify-image", "foo"},
+			WantedData{SpecifyImage, "foo", 2, ""},
+		},
+		{
+			OptionData{"--specify-image=foo", ""},
+			WantedData{SpecifyImage, "foo", 1, ""},
+		},
+		{
 			OptionData{"--help", ""},
 			WantedData{HelpFlag, "", 1, ""},
 		},
@@ -160,6 +172,24 @@ func TestSources(t *testing.T) {
 		got := ParseOsArgs(c.osArgs)
 		if !reflect.DeepEqual(got.options[Source], c.want) {
 			t.Errorf("ParseOsArgs %q != %q", got.options[Source], c.want)
+		}
+	}
+}
+
+func TestSpecifyImage(t *testing.T) {
+	cases := []struct {
+		osArgs []string
+		want   []string
+	}{
+		{
+			[]string{"filename", "-s", "foo", "--specify-image", "bar", "--specify-image=foobar"},
+			[]string{"foo", "bar", "foobar"},
+		},
+	}
+	for _, c := range cases {
+		got := ParseOsArgs(c.osArgs)
+		if !reflect.DeepEqual(got.options[SpecifyImage], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.options[SpecifyImage], c.want)
 		}
 	}
 }
