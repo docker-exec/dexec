@@ -1,5 +1,6 @@
 {
-    "PackageVersion": "1.0.0",
+    "PrereleaseInfo": "snapshot",
+    "PackageVersion": "1.0.1",
     "ConfigVersion": "0.9",
     "TaskSettings": {
         "bintray": {
