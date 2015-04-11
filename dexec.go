@@ -75,6 +75,7 @@ var LookupImageByExtension = func() func(string) DexecImage {
 		"pl":     {"pl", "dexec/perl", "1.0.1"},
 		"php":    {"php", "dexec/php", "1.0.0"},
 		"py":     {"py", "dexec/python", "1.0.0"},
+		"r":      {"r", "dexec/r", "latest"},
 		"rkt":    {"rkt", "dexec/racket", "1.0.0"},
 		"rb":     {"rb", "dexec/ruby", "1.0.0"},
 		"rs":     {"rs", "dexec/rust", "1.0.0"},

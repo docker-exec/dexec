@@ -71,6 +71,7 @@ func TestLookupImageByExtension(t *testing.T) {
 		{"pl", "pl", "perl", "1.0.1"},
 		{"php", "php", "php", "1.0.0"},
 		{"py", "py", "python", "1.0.0"},
+		{"r", "r", "r", "latest"},
 		{"rkt", "rkt", "racket", "1.0.0"},
 		{"rb", "rb", "ruby", "1.0.0"},
 		{"rs", "rs", "rust", "1.0.0"},
