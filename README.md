@@ -30,6 +30,8 @@ $ go get github.com/docker-exec/dexec
 
 These examples use a .cpp source file, but any of the supported languages can be used instead. Arguments can be passed in any order, using any style of the acceptable switch styles described.
 
+If you are using boot2docker by default the only paths that can be mounted are in the operating system's users directory. See Docker's page on [managing data in containers](https://docs.docker.com/userguide/dockervolumes/#mount-a-host-directory-as-a-data-volume) for more information.
+
 The application provides help and version information as follows:
 
 ```sh
@@ -74,6 +76,12 @@ By default, ```dexec``` assumes the sources are in the directory from which it i
 
 ```sh
 $ dexec -C /path/to/sources foo.cpp bar.cpp
+```
+
+Use the following form on Windows (as opposed to /c/path/to/sources):
+
+```sh
+$ dexec -C C:\path\to\sources foo.cpp bar.cpp
 ```
 
 ### Include files and folders mounted in Docker container
