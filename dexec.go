@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
+	"strings"
 )
 
 // ExtractFileExtension extracts the extension from a filename. This is defined
@@ -90,12 +92,13 @@ var LookupImageByExtension = func() func(string) DexecImage {
 const dexecPath = "/tmp/dexec/build"
 const dexecImageTemplate = "%s:%s"
 const dexecVolumeTemplate = "%s/%s:%s/%s"
+const dexecSanitisedWindowsPathPattern = "/%s%s"
 
 // ExtractBasenameAndPermission takes an include string and splits it into
 // its file or folder name and the permission string if present or the empty
 // string if not.
 func ExtractBasenameAndPermission(path string) (string, string) {
-	pathPattern := regexp.MustCompile("([\\w.-]+)(:(rw|ro))")
+	pathPattern := regexp.MustCompile("([\\w.:-]+)(:(rw|ro))")
 	match := pathPattern.FindStringSubmatch(path)
 
 	basename := path
@@ -108,30 +111,64 @@ func ExtractBasenameAndPermission(path string) (string, string) {
 	return basename, permission
 }
 
+// BuildVolumeArgs takes a base path and returns an array of Docker volume
+// arguments. The array takes the form {"-v", "/foo:/bar:[rw|ro]", ...} for
+// each source or include.
+func BuildVolumeArgs(path string, targets []string) []string {
+	var volumeArgs []string
+
+	for _, source := range targets {
+		basename, _ := ExtractBasenameAndPermission(source)
+
+		volumeArgs = append(
+			volumeArgs,
+			[]string{
+				"-v",
+				fmt.Sprintf(dexecVolumeTemplate, path, basename, dexecPath, source),
+			}...,
+		)
+	}
+	return volumeArgs
+}
+
+// SanitisePath takes an absolute path as provided by filepath.Abs() and
+// makes it ready to be passed to Docker based on the current OS. So far
+// the only OS format that requires transforming is Windows which is provided
+// in the form 'C:\some\path' but Docker requires '/c/some/path'.
+func SanitisePath(path string, platform string) string {
+	sanitised := path
+	if platform == "windows" {
+		windowsPathPattern := regexp.MustCompile("^([A-Za-z]):(.*)")
+		match := windowsPathPattern.FindStringSubmatch(path)
+
+		driveLetter := strings.ToLower(match[1])
+		pathRemainder := strings.Replace(match[2], "\\", "/", -1)
+
+		sanitised = fmt.Sprintf(dexecSanitisedWindowsPathPattern, driveLetter, pathRemainder)
+	}
+	return sanitised
+}
+
+// RetrievePath takes an array whose first element may contain an overridden
+// path and converts either this, or the default of "." to an absolute path
+// using Go's file utilities. This is then passed to SanitisedPath with the
+// current OS to get it into a Docker ready format.
+func RetrievePath(targetDirs []string) string {
+	path := "."
+	if len(targetDirs) > 0 {
+		path = targetDirs[0]
+	}
+	absPath, _ := filepath.Abs(path)
+	return SanitisePath(absPath, runtime.GOOS)
+}
+
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
 func RunDexecContainer(dexecImage DexecImage, options map[OptionType][]string) {
 	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage.image, dexecImage.version)
 
-	path := "."
-	if len(options[TargetDir]) > 0 {
-		path = options[TargetDir][0]
-	}
-	absPath, _ := filepath.Abs(path)
-
-	var dockerArgs []string
-	for _, source := range append(options[Source], options[Include]...) {
-		basename, _ := ExtractBasenameAndPermission(source)
-
-		dockerArgs = append(
-			dockerArgs,
-			[]string{
-				"-v",
-				fmt.Sprintf(dexecVolumeTemplate, absPath, basename, dexecPath, source),
-			}...,
-		)
-	}
+	volumeArgs := BuildVolumeArgs(RetrievePath(options[TargetDir]), append(options[Source], options[Include]...))
 
 	var sourceBasenames []string
 	for _, source := range options[Source] {
@@ -151,7 +188,7 @@ func RunDexecContainer(dexecImage DexecImage, options map[OptionType][]string) {
 
 	RunAnonymousContainer(
 		dockerImage,
-		dockerArgs,
+		volumeArgs,
 		entrypointArgs,
 	)
 }

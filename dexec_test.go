@@ -1,6 +1,43 @@
 package main
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
+
+func TestBuildVolumeArgs(t *testing.T) {
+	cases := []struct {
+		path        string
+		targets     []string
+		wantVolumes []string
+	}{
+		{"/foo", []string{"bar"}, []string{"-v", "/foo/bar:/tmp/dexec/build/bar"}},
+	}
+	for _, c := range cases {
+		gotVolumes := BuildVolumeArgs(c.path, c.targets)
+		if !reflect.DeepEqual(gotVolumes, c.wantVolumes) {
+			t.Errorf("BuildVolumeArgs(%q, %q) %q != %q", c.path, c.targets, gotVolumes, c.wantVolumes)
+		}
+	}
+}
+
+func TestSanitisePath(t *testing.T) {
+	cases := []struct {
+		path     string
+		platform string
+		want     string
+	}{
+		{"/Users/foo/bar", "darin", "/Users/foo/bar"},
+		{"/home/foo/bar", "linux", "/home/foo/bar"},
+		{"C:\\Users\\foo\\bar", "windows", "/c/Users/foo/bar"},
+	}
+	for _, c := range cases {
+		gotSanitisedPath := SanitisePath(c.path, c.platform)
+		if gotSanitisedPath != c.want {
+			t.Errorf("SanitisedPath %q != %q", gotSanitisedPath, c.want)
+		}
+	}
+}
 
 func TestExtractFileExtension(t *testing.T) {
 	cases := []struct {
