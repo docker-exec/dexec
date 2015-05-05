@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"fmt"
@@ -51,8 +51,8 @@ const (
 // CLI defines a data structure that represents the application's name and
 // a map of the various options to be used when starting the container.
 type CLI struct {
-	filename string
-	options  map[OptionType][]string
+	Filename string
+	Options  map[OptionType][]string
 }
 
 // ArgToOption takes two candidate strings and returns a tuple consisting of
@@ -134,8 +134,8 @@ func ParseArgs(args []string) map[OptionType][]string {
 // filename and map of option types to their values.
 func ParseOsArgs(args []string) CLI {
 	return CLI{
-		filename: args[0],
-		options:  ParseArgs(args[1:]),
+		Filename: args[0],
+		Options:  ParseArgs(args[1:]),
 	}
 }
 
@@ -161,5 +161,5 @@ func DisplayHelp(filename string) {
 
 // DisplayVersion prints the version information for the program.
 func DisplayVersion(filename string) {
-	fmt.Printf("%s 1.0.1\n", filename)
+	fmt.Printf("%s 1.0.2-snapshot\n", filename)
 }
