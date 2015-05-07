@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"reflect"
@@ -137,8 +137,8 @@ func TestFilename(t *testing.T) {
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
-		if got.filename != c.want {
-			t.Errorf("ParseOsArgs %q != %q", got.filename, c.want)
+		if got.Filename != c.want {
+			t.Errorf("ParseOsArgs %q != %q", got.Filename, c.want)
 		}
 	}
 }
@@ -152,8 +152,8 @@ func TestTargetDir(t *testing.T) {
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
-		if !reflect.DeepEqual(got.options[TargetDir], c.want) {
-			t.Errorf("ParseOsArgs %q != %q", got.options[TargetDir], c.want)
+		if !reflect.DeepEqual(got.Options[TargetDir], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[TargetDir], c.want)
 		}
 	}
 }
@@ -170,8 +170,8 @@ func TestSources(t *testing.T) {
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
-		if !reflect.DeepEqual(got.options[Source], c.want) {
-			t.Errorf("ParseOsArgs %q != %q", got.options[Source], c.want)
+		if !reflect.DeepEqual(got.Options[Source], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[Source], c.want)
 		}
 	}
 }
@@ -188,8 +188,8 @@ func TestSpecifyImage(t *testing.T) {
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
-		if !reflect.DeepEqual(got.options[SpecifyImage], c.want) {
-			t.Errorf("ParseOsArgs %q != %q", got.options[SpecifyImage], c.want)
+		if !reflect.DeepEqual(got.Options[SpecifyImage], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[SpecifyImage], c.want)
 		}
 	}
 }
@@ -206,8 +206,8 @@ func TestIncludes(t *testing.T) {
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
-		if !reflect.DeepEqual(got.options[Include], c.want) {
-			t.Errorf("ParseOsArgs %q != %q", got.options[Include], c.want)
+		if !reflect.DeepEqual(got.Options[Include], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[Include], c.want)
 		}
 	}
 }
@@ -224,8 +224,8 @@ func TestArgs(t *testing.T) {
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
-		if !reflect.DeepEqual(got.options[Arg], c.want) {
-			t.Errorf("ParseOsArgs %q != %q", got.options[Arg], c.want)
+		if !reflect.DeepEqual(got.Options[Arg], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[Arg], c.want)
 		}
 	}
 }
@@ -242,8 +242,8 @@ func TestBuildArgs(t *testing.T) {
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
-		if !reflect.DeepEqual(got.options[BuildArg], c.want) {
-			t.Errorf("ParseOsArgs %q != %q", got.options[BuildArg], c.want)
+		if !reflect.DeepEqual(got.Options[BuildArg], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[BuildArg], c.want)
 		}
 	}
 }
@@ -299,12 +299,12 @@ func TestOrdering(t *testing.T) {
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
-		if !reflect.DeepEqual(got.options[BuildArg], c.want[BuildArg]) {
-			t.Errorf("ParseOsArgs %q != %q", got.options[BuildArg], c.want[BuildArg])
-		} else if !reflect.DeepEqual(got.options[Arg], c.want[Arg]) {
-			t.Errorf("ParseOsArgs %q != %q", got.options[Arg], c.want[Arg])
-		} else if !reflect.DeepEqual(got.options[Source], c.want[Source]) {
-			t.Errorf("ParseOsArgs %q != %q", got.options[Source], c.want[Source])
+		if !reflect.DeepEqual(got.Options[BuildArg], c.want[BuildArg]) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[BuildArg], c.want[BuildArg])
+		} else if !reflect.DeepEqual(got.Options[Arg], c.want[Arg]) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[Arg], c.want[Arg])
+		} else if !reflect.DeepEqual(got.Options[Source], c.want[Source]) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[Source], c.want[Source])
 		}
 	}
 }

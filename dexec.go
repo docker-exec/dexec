@@ -8,6 +8,9 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/docker-exec/dexec/cli"
+	"github.com/docker-exec/dexec/docker"
 )
 
 // ExtractFileExtension extracts the extension from a filename. This is defined
@@ -165,49 +168,49 @@ func RetrievePath(targetDirs []string) string {
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
-func RunDexecContainer(dexecImage DexecImage, options map[OptionType][]string) {
+func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]string) {
 	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage.image, dexecImage.version)
 
-	volumeArgs := BuildVolumeArgs(RetrievePath(options[TargetDir]), append(options[Source], options[Include]...))
+	volumeArgs := BuildVolumeArgs(RetrievePath(options[cli.TargetDir]), append(options[cli.Source], options[cli.Include]...))
 
 	var sourceBasenames []string
-	for _, source := range options[Source] {
+	for _, source := range options[cli.Source] {
 		basename, _ := ExtractBasenameAndPermission(source)
 		sourceBasenames = append(sourceBasenames, []string{basename}...)
 	}
 
-	entrypointArgs := JoinStringSlices(
+	entrypointArgs := docker.JoinStringSlices(
 		sourceBasenames,
-		AddPrefix(options[BuildArg], "-b"),
-		AddPrefix(options[Arg], "-a"),
+		docker.AddPrefix(options[cli.BuildArg], "-b"),
+		docker.AddPrefix(options[cli.Arg], "-a"),
 	)
 
-	if len(options[UpdateFlag]) > 0 {
-		DockerPull(dockerImage)
+	if len(options[cli.UpdateFlag]) > 0 {
+		docker.DockerPull(dockerImage)
 	}
 
-	RunAnonymousContainer(
+	docker.RunAnonymousContainer(
 		dockerImage,
 		volumeArgs,
 		entrypointArgs,
 	)
 }
 
-func validate(cli CLI) bool {
-	if !IsDockerPresent() {
+func validate(cliParser cli.CLI) bool {
+	if !docker.IsDockerPresent() {
 		log.Fatal("Docker not found")
-	} else if !IsDockerRunning() {
+	} else if !docker.IsDockerRunning() {
 		log.Fatal("Docker not running")
 	}
 
 	valid := false
-	if len(cli.options[VersionFlag]) != 0 {
-		DisplayVersion(cli.filename)
-	} else if len(cli.options[Source]) == 0 ||
-		len(cli.options[HelpFlag]) != 0 ||
-		len(cli.options[TargetDir]) > 1 ||
-		len(cli.options[SpecifyImage]) > 1 {
-		DisplayHelp(cli.filename)
+	if len(cliParser.Options[cli.VersionFlag]) != 0 {
+		cli.DisplayVersion(cliParser.Filename)
+	} else if len(cliParser.Options[cli.Source]) == 0 ||
+		len(cliParser.Options[cli.HelpFlag]) != 0 ||
+		len(cliParser.Options[cli.TargetDir]) > 1 ||
+		len(cliParser.Options[cli.SpecifyImage]) > 1 {
+		cli.DisplayHelp(cliParser.Filename)
 	} else {
 		valid = true
 	}
@@ -215,17 +218,17 @@ func validate(cli CLI) bool {
 }
 
 func main() {
-	cli := ParseOsArgs(os.Args)
+	cliParser := cli.ParseOsArgs(os.Args)
 
-	if validate(cli) {
-		extension := ExtractFileExtension(cli.options[Source][0])
+	if validate(cliParser) {
+		extension := ExtractFileExtension(cliParser.Options[cli.Source][0])
 		image := LookupImageByExtension(extension)
-		if len(cli.options[SpecifyImage]) == 1 {
-			image = LookupImageByOverride(cli.options[SpecifyImage][0], extension)
+		if len(cliParser.Options[cli.SpecifyImage]) == 1 {
+			image = LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], extension)
 		}
 		RunDexecContainer(
 			image,
-			cli.options,
+			cliParser.Options,
 		)
 	}
 }
