@@ -39,22 +39,6 @@ func TestSanitisePath(t *testing.T) {
 	}
 }
 
-func TestExtractFileExtension(t *testing.T) {
-	cases := []struct {
-		filename  string
-		extension string
-	}{
-		{"foo.bar", "bar"},
-		{"foo.bar.foobar", "foobar"},
-	}
-	for _, c := range cases {
-		gotExtension := ExtractFileExtension(c.filename)
-		if gotExtension != c.extension {
-			t.Errorf("ExtractFileExtension %q != %q", gotExtension, c.extension)
-		}
-	}
-}
-
 func TestLookupImageByOverride(t *testing.T) {
 	cases := []struct {
 		image         string
