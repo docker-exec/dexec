@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 ### Changed
-- Moved Docker and CLI related functionality to separate packages.
+- Moved Docker, CLI & miscellaneous functionality to separate packages.
 
 ## [1.0.1] - 2015-04-20
 ### Added

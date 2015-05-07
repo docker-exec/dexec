@@ -5,28 +5,9 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+
+	"github.com/docker-exec/dexec/util"
 )
-
-// AddPrefix takes a string slice and returns a new string slice
-// with the supplied prefix inserted before every string in the
-// original slice.
-func AddPrefix(inSlice []string, prefix string) []string {
-	var outSlice []string
-	for _, option := range inSlice {
-		outSlice = append(outSlice, []string{prefix, option}...)
-	}
-	return outSlice
-}
-
-// JoinStringSlices takes an arbitrary number of string slices
-// and concatenates them in the order supplied.
-func JoinStringSlices(slices ...[]string) []string {
-	var outSlice []string
-	for _, slice := range slices {
-		outSlice = append(outSlice, slice...)
-	}
-	return outSlice
-}
 
 // DockerVersion shells out the command 'docker -v', returning the version
 // information if the command is successful, and panicking if not.
@@ -115,7 +96,7 @@ func RunAnonymousContainer(image string, extraDockerArgs []string, entrypointArg
 	imageDockerArgs := []string{"-t", image}
 	out := exec.Command(
 		"docker",
-		JoinStringSlices(
+		util.JoinStringSlices(
 			baseDockerArgs,
 			extraDockerArgs,
 			imageDockerArgs,

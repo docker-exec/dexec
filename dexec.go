@@ -11,19 +11,8 @@ import (
 
 	"github.com/docker-exec/dexec/cli"
 	"github.com/docker-exec/dexec/docker"
+	"github.com/docker-exec/dexec/util"
 )
-
-// ExtractFileExtension extracts the extension from a filename. This is defined
-// as the remainder of the string after the last '.'.
-func ExtractFileExtension(filename string) string {
-	patternPermission := regexp.MustCompile(`.*\.(.*):.*`)
-	permissionMatch := patternPermission.FindStringSubmatch(filename)
-	if len(permissionMatch) > 0 {
-		return permissionMatch[1]
-	}
-	patternFilename := regexp.MustCompile(`.*\.(.*)`)
-	return patternFilename.FindStringSubmatch(filename)[1]
-}
 
 // DexecImage consists of the file extension, Docker image name and Docker
 // image version to use for a given Docker Exec image.
@@ -179,10 +168,10 @@ func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]strin
 		sourceBasenames = append(sourceBasenames, []string{basename}...)
 	}
 
-	entrypointArgs := docker.JoinStringSlices(
+	entrypointArgs := util.JoinStringSlices(
 		sourceBasenames,
-		docker.AddPrefix(options[cli.BuildArg], "-b"),
-		docker.AddPrefix(options[cli.Arg], "-a"),
+		util.AddPrefix(options[cli.BuildArg], "-b"),
+		util.AddPrefix(options[cli.Arg], "-a"),
 	)
 
 	if len(options[cli.UpdateFlag]) > 0 {
@@ -221,7 +210,7 @@ func main() {
 	cliParser := cli.ParseOsArgs(os.Args)
 
 	if validate(cliParser) {
-		extension := ExtractFileExtension(cliParser.Options[cli.Source][0])
+		extension := util.ExtractFileExtension(cliParser.Options[cli.Source][0])
 		image := LookupImageByExtension(extension)
 		if len(cliParser.Options[cli.SpecifyImage]) == 1 {
 			image = LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], extension)
