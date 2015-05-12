@@ -140,6 +140,13 @@ $ chmod +x foo.cpp
 $ ./foo.cpp
 ```
 
+## Contributors
+
+Thanks to those who have raised issues or created PRs in the following repositories:
+
+ * [docker-exec/dexec](https://github.com/docker-exec/dexec/graphs/contributors)
+ * [docker-exec/perl](https://github.com/docker-exec/perl/graphs/contributors)
+
 ## See also
 
 * [Docker Exec GitHub Page](https://docker-exec.github.io/)
