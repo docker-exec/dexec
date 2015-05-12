@@ -12,11 +12,11 @@ Download the appropriate binary for your OS and architecture, then unzip or unta
 
 | OS      | 64-bit | 32-bit |
 | ------- | ------ | ------ |
-| Linux   |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.1_linux_amd64.tar.gz) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.1_linux_386.tar.gz) |
-| Mac     |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.1_darwin_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.1_darwin_386.zip) |
-| Windows |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.1_windows_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.1_windows_386.zip) |
+| Linux   |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_linux_amd64.tar.gz) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_linux_386.tar.gz) |
+| Mac     |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_darwin_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_darwin_386.zip) |
+| Windows |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_windows_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_windows_386.zip) |
 
-Binaries for other distributions are available on [Bintray](https://bintray.com/dexec/release/dexec/1.0.1).
+Binaries for other distributions are available on [Bintray](https://bintray.com/dexec/release/dexec/1.0.2).
 
 ### Using Go
 
@@ -103,9 +103,9 @@ As with sources, included files and directories are mounted using the default Do
 ```dexec``` stores a map of file extensions to Docker images and uses this to look up the right image to run for a given source file. This can be overridden in the following way:
 
 ```sh
-$ dexec foo.c --specify-image=dexec/cpp
-$ dexec foo.c --specify-image dexec/cpp
-$ dexec foo.c -s dexec/cpp
+$ dexec foo.c --specify-image=dexec/lang-cpp
+$ dexec foo.c --specify-image dexec/lang-cpp
+$ dexec foo.c -s dexec/lang-cpp
 ```
 
 If no image version is specified, "latest" is used.
