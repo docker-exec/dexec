@@ -12,11 +12,11 @@ Download the appropriate binary for your OS and architecture, then unzip or unta
 
 | OS      | 64-bit | 32-bit |
 | ------- | ------ | ------ |
-| Linux   |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_linux_amd64.tar.gz) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_linux_386.tar.gz) |
-| Mac     |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_darwin_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_darwin_386.zip) |
-| Windows |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_windows_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.2_windows_386.zip) |
+| Linux   |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_linux_amd64.tar.gz) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_linux_386.tar.gz) |
+| Mac     |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_darwin_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_darwin_386.zip) |
+| Windows |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_windows_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_windows_386.zip) |
 
-Binaries for other distributions are available on [Bintray](https://bintray.com/dexec/release/dexec/1.0.2).
+Binaries for other distributions are available on [Bintray](https://bintray.com/dexec/release/dexec/1.0.3).
 
 ### Using Go
 
@@ -142,10 +142,15 @@ $ ./foo.cpp
 
 ## Contributors
 
-Thanks to those who have raised issues or created PRs in the following repositories:
+#### [docker-exec/dexec](https://github.com/docker-exec/dexec/graphs/contributors)
 
- * [docker-exec/dexec](https://github.com/docker-exec/dexec/graphs/contributors)
- * [docker-exec/perl](https://github.com/docker-exec/perl/graphs/contributors)
+ * [Alix Axel](https://github.com/alixaxel)
+ * [kroton](https://github.com/kroton)
+ * [John Albietz](https://github.com/inthecloud247)
+
+#### [docker-exec/perl](https://github.com/docker-exec/perl/graphs/contributors)
+
+ * [Øyvind Skaar](https://github.com/oyvindsk)
 
 ## See also
 
