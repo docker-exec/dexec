@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/docker-exec/dexec/cli"
-	"github.com/docker-exec/dexec/docker"
 	"github.com/docker-exec/dexec/util"
+	"github.com/fsouza/go-dockerclient"
 )
 
 // DexecImage consists of the file extension, Docker image name and Docker
@@ -114,10 +114,7 @@ func BuildVolumeArgs(path string, targets []string) []string {
 
 		volumeArgs = append(
 			volumeArgs,
-			[]string{
-				"-v",
-				fmt.Sprintf(dexecVolumeTemplate, path, basename, dexecPath, source),
-			}...,
+			fmt.Sprintf(dexecVolumeTemplate, path, basename, dexecPath, source),
 		)
 	}
 	return volumeArgs
@@ -160,7 +157,27 @@ func RetrievePath(targetDirs []string) string {
 func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]string) {
 	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage.image, dexecImage.version)
 
-	volumeArgs := BuildVolumeArgs(RetrievePath(options[cli.TargetDir]), append(options[cli.Source], options[cli.Include]...))
+	client, err := docker.NewClientFromEnv()
+
+	image, err := client.InspectImage(dockerImage)
+
+	if len(options[cli.UpdateFlag]) > 0 || image == nil {
+		client.PullImage(docker.PullImageOptions{
+			Repository: dexecImage.image,
+			Tag:        dexecImage.version,
+		}, docker.AuthConfiguration{})
+
+		image, err = client.InspectImage(dockerImage)
+		if err != nil {
+			log.Fatal(err)
+		} else if image == nil {
+			log.Fatal("image was nil")
+		}
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	var sourceBasenames []string
 	for _, source := range options[cli.Source] {
@@ -174,23 +191,55 @@ func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]strin
 		util.AddPrefix(options[cli.Arg], "-a"),
 	)
 
-	if len(options[cli.UpdateFlag]) > 0 {
-		docker.DockerPull(dockerImage)
+	container, err := client.CreateContainer(docker.CreateContainerOptions{
+		Config: &docker.Config{
+			Image: dockerImage,
+			Cmd:   entrypointArgs,
+		},
+	})
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	docker.RunAnonymousContainer(
-		dockerImage,
-		volumeArgs,
-		entrypointArgs,
-	)
+	err = client.StartContainer(container.ID, &docker.HostConfig{
+		Binds: BuildVolumeArgs(
+			RetrievePath(options[cli.TargetDir]),
+			append(options[cli.Source], options[cli.Include]...)),
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client.AttachToContainer(docker.AttachToContainerOptions{
+		Container:    container.ID,
+		OutputStream: os.Stdout,
+		ErrorStream:  os.Stderr,
+		Stream:       true,
+		Stdout:       true,
+		Stderr:       true,
+		Logs:         true,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.RemoveContainer(docker.RemoveContainerOptions{
+		ID: container.ID,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func validate(cliParser cli.CLI) bool {
-	if !docker.IsDockerPresent() {
-		log.Fatal("Docker not found")
-	} else if !docker.IsDockerRunning() {
-		log.Fatal("Docker not running")
-	}
+	// if !docker.IsDockerPresent() {
+	// 	log.Fatal("Docker not found")
+	// } else if !docker.IsDockerRunning() {
+	// 	log.Fatal("Docker not running")
+	// }
 
 	valid := false
 	if len(cliParser.Options[cli.VersionFlag]) != 0 {

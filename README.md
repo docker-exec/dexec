@@ -26,6 +26,14 @@ If you have Go installed and configured correctly, you can install ```dexec``` w
 $ go get github.com/docker-exec/dexec
 ```
 
+### Using Homebrew
+
+If you're on OSX you can install ```dexec``` with brew.
+
+```sh
+$ brew install docker-exec/formula/dexec
+```
+
 ## Reference
 
 These examples use a .cpp source file, but any of the supported languages can be used instead. Arguments can be passed in any order, using any style of the acceptable switch styles described.
