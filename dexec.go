@@ -103,20 +103,6 @@ func ExtractBasenameAndPermission(path string) (string, string) {
 	return basename, permission
 }
 
-func BuildVolumeArgs2(path string, targets []string) []string {
-	var volumeArgs []string
-
-	for _, source := range targets {
-		basename, _ := ExtractBasenameAndPermission(source)
-
-		volumeArgs = append(
-			volumeArgs,
-			fmt.Sprintf(dexecVolumeTemplate, path, basename, dexecPath, source),
-		)
-	}
-	return volumeArgs
-}
-
 // BuildVolumeArgs takes a base path and returns an array of Docker volume
 // arguments. The array takes the form {"-v", "/foo:/bar:[rw|ro]", ...} for
 // each source or include.
@@ -128,10 +114,7 @@ func BuildVolumeArgs(path string, targets []string) []string {
 
 		volumeArgs = append(
 			volumeArgs,
-			[]string{
-				"-v",
-				fmt.Sprintf(dexecVolumeTemplate, path, basename, dexecPath, source),
-			}...,
+			fmt.Sprintf(dexecVolumeTemplate, path, basename, dexecPath, source),
 		)
 	}
 	return volumeArgs
@@ -174,20 +157,6 @@ func RetrievePath(targetDirs []string) string {
 func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]string) {
 	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage.image, dexecImage.version)
 
-	// volumeArgs := BuildVolumeArgs(RetrievePath(options[cli.TargetDir]), append(options[cli.Source], options[cli.Include]...))
-
-	var sourceBasenames []string
-	for _, source := range options[cli.Source] {
-		basename, _ := ExtractBasenameAndPermission(source)
-		sourceBasenames = append(sourceBasenames, []string{basename}...)
-	}
-
-	entrypointArgs := util.JoinStringSlices(
-		sourceBasenames,
-		util.AddPrefix(options[cli.BuildArg], "-b"),
-		util.AddPrefix(options[cli.Arg], "-a"),
-	)
-
 	client, err := docker.NewClientFromEnv()
 
 	image, err := client.InspectImage(dockerImage)
@@ -210,6 +179,18 @@ func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]strin
 		log.Fatal(err)
 	}
 
+	var sourceBasenames []string
+	for _, source := range options[cli.Source] {
+		basename, _ := ExtractBasenameAndPermission(source)
+		sourceBasenames = append(sourceBasenames, []string{basename}...)
+	}
+
+	entrypointArgs := util.JoinStringSlices(
+		sourceBasenames,
+		util.AddPrefix(options[cli.BuildArg], "-b"),
+		util.AddPrefix(options[cli.Arg], "-a"),
+	)
+
 	container, err := client.CreateContainer(docker.CreateContainerOptions{
 		Config: &docker.Config{
 			Image: dockerImage,
@@ -222,7 +203,7 @@ func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]strin
 	}
 
 	err = client.StartContainer(container.ID, &docker.HostConfig{
-		Binds: BuildVolumeArgs2(
+		Binds: BuildVolumeArgs(
 			RetrievePath(options[cli.TargetDir]),
 			append(options[cli.Source], options[cli.Include]...)),
 	})
@@ -240,11 +221,6 @@ func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]strin
 		Stderr:       true,
 		Logs:         true,
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// err = client.StopContainer(container.ID, 3)
 
 	if err != nil {
 		log.Fatal(err)
@@ -256,11 +232,6 @@ func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]strin
 	if err != nil {
 		log.Fatal(err)
 	}
-	// docker.RunAnonymousContainer(
-	// 	dockerImage,
-	// 	volumeArgs,
-	// 	entrypointArgs,
-	// )
 }
 
 func validate(cliParser cli.CLI) bool {

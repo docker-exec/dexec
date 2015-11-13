@@ -11,7 +11,7 @@ func TestBuildVolumeArgs(t *testing.T) {
 		targets     []string
 		wantVolumes []string
 	}{
-		{"/foo", []string{"bar"}, []string{"-v", "/foo/bar:/tmp/dexec/build/bar"}},
+		{"/foo", []string{"bar"}, []string{"/foo/bar:/tmp/dexec/build/bar"}},
 	}
 	for _, c := range cases {
 		gotVolumes := BuildVolumeArgs(c.path, c.targets)

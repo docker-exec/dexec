@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased][unreleased]
+### Changed
+- Migrated from custom code that called the Docker CLI to the library 'fsouza/go-dockerclient' which uses the Docker Remote API.
+- Deleted custom code that called the Docker CLI.
+
 ## [1.0.3] - 2015-11-13
 ### Fixed
 - Forward application output to stdout/stderr correctly.
