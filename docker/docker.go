@@ -93,7 +93,7 @@ func IsDockerRunning() (running bool) {
 // as well as arguments to pass to the image's entrypoint.
 func RunAnonymousContainer(image string, extraDockerArgs []string, entrypointArgs []string) {
 	baseDockerArgs := []string{"run", "--rm"}
-	imageDockerArgs := []string{"-t", image}
+	imageDockerArgs := []string{image}
 	out := exec.Command(
 		"docker",
 		util.JoinStringSlices(
