@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
+### Added
+- Added installation instructions for Homebrew on OSX.
+
 ### Changed
 - Migrated from custom code that called the Docker CLI to the library 'fsouza/go-dockerclient' which uses the Docker Remote API.
 - Deleted custom code that called the Docker CLI.
