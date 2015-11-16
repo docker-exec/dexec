@@ -1,6 +1,11 @@
 package util
 
-import "regexp"
+import (
+	"io/ioutil"
+	"log"
+	"os"
+	"regexp"
+)
 
 // AddPrefix takes a string slice and returns a new string slice
 // with the supplied prefix inserted before every string in the
@@ -33,4 +38,16 @@ func ExtractFileExtension(filename string) string {
 	}
 	patternFilename := regexp.MustCompile(`.*\.(.*)`)
 	return patternFilename.FindStringSubmatch(filename)[1]
+}
+
+func WriteFile(filename string, content []byte) {
+	if err := ioutil.WriteFile(filename, content, 0644); err != nil {
+		log.Fatalf("Unable to write %s\n%q", filename, err)
+	}
+}
+
+func DeleteFile(filename string) {
+	if err := os.Remove(filename); err != nil {
+		log.Fatalf("Unable to delete %s\n%q", filename, err)
+	}
 }

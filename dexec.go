@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -8,6 +9,8 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"code.google.com/p/go-uuid/uuid"
 
 	"github.com/docker-exec/dexec/cli"
 	"github.com/docker-exec/dexec/util"
@@ -43,41 +46,53 @@ func LookupImageByOverride(image string, extension string) DexecImage {
 	}
 }
 
+var innerMap = map[string]DexecImage{
+	"c":      {"c", "dexec/lang-c", "1.0.2"},
+	"clj":    {"clj", "dexec/lang-clojure", "1.0.1"},
+	"coffee": {"coffee", "dexec/lang-coffee", "1.0.2"},
+	"cpp":    {"cpp", "dexec/lang-cpp", "1.0.2"},
+	"cs":     {"cs", "dexec/lang-csharp", "1.0.2"},
+	"d":      {"d", "dexec/lang-d", "1.0.1"},
+	"erl":    {"erl", "dexec/lang-erlang", "1.0.1"},
+	"fs":     {"fs", "dexec/lang-fsharp", "1.0.2"},
+	"go":     {"go", "dexec/lang-go", "1.0.1"},
+	"groovy": {"groovy", "dexec/lang-groovy", "1.0.1"},
+	"hs":     {"hs", "dexec/lang-haskell", "1.0.1"},
+	"java":   {"java", "dexec/lang-java", "1.0.2"},
+	"lisp":   {"lisp", "dexec/lang-lisp", "1.0.1"},
+	"lua":    {"lua", "dexec/lang-lua", "1.0.1"},
+	"js":     {"js", "dexec/lang-node", "1.0.2"},
+	"nim":    {"nim", "dexec/lang-nim", "1.0.1"},
+	"m":      {"m", "dexec/lang-objc", "1.0.1"},
+	"ml":     {"ml", "dexec/lang-ocaml", "1.0.1"},
+	"p6":     {"p6", "dexec/lang-perl6", "1.0.1"},
+	"pl":     {"pl", "dexec/lang-perl", "1.0.2"},
+	"php":    {"php", "dexec/lang-php", "1.0.1"},
+	"py":     {"py", "dexec/lang-python", "1.0.2"},
+	"r":      {"r", "dexec/lang-r", "1.0.1"},
+	"rkt":    {"rkt", "dexec/lang-racket", "1.0.1"},
+	"rb":     {"rb", "dexec/lang-ruby", "1.0.1"},
+	"rs":     {"rs", "dexec/lang-rust", "1.0.1"},
+	"scala":  {"scala", "dexec/lang-scala", "1.0.1"},
+	"sh":     {"sh", "dexec/lang-bash", "1.0.1"},
+}
+
 // LookupImageByExtension is a closure storing a dictionary mapping source
 // extensions to the names and versions of Docker Exec images.
 var LookupImageByExtension = func() func(string) DexecImage {
-	innerMap := map[string]DexecImage{
-		"c":      {"c", "dexec/lang-c", "1.0.2"},
-		"clj":    {"clj", "dexec/lang-clojure", "1.0.1"},
-		"coffee": {"coffee", "dexec/lang-coffee", "1.0.2"},
-		"cpp":    {"cpp", "dexec/lang-cpp", "1.0.2"},
-		"cs":     {"cs", "dexec/lang-csharp", "1.0.2"},
-		"d":      {"d", "dexec/lang-d", "1.0.1"},
-		"erl":    {"erl", "dexec/lang-erlang", "1.0.1"},
-		"fs":     {"fs", "dexec/lang-fsharp", "1.0.2"},
-		"go":     {"go", "dexec/lang-go", "1.0.1"},
-		"groovy": {"groovy", "dexec/lang-groovy", "1.0.1"},
-		"hs":     {"hs", "dexec/lang-haskell", "1.0.1"},
-		"java":   {"java", "dexec/lang-java", "1.0.2"},
-		"lisp":   {"lisp", "dexec/lang-lisp", "1.0.1"},
-		"lua":    {"lua", "dexec/lang-lua", "1.0.1"},
-		"js":     {"js", "dexec/lang-node", "1.0.2"},
-		"nim":    {"nim", "dexec/lang-nim", "1.0.1"},
-		"m":      {"m", "dexec/lang-objc", "1.0.1"},
-		"ml":     {"ml", "dexec/lang-ocaml", "1.0.1"},
-		"p6":     {"p6", "dexec/lang-perl6", "1.0.1"},
-		"pl":     {"pl", "dexec/lang-perl", "1.0.2"},
-		"php":    {"php", "dexec/lang-php", "1.0.1"},
-		"py":     {"py", "dexec/lang-python", "1.0.2"},
-		"r":      {"r", "dexec/lang-r", "1.0.1"},
-		"rkt":    {"rkt", "dexec/lang-racket", "1.0.1"},
-		"rb":     {"rb", "dexec/lang-ruby", "1.0.1"},
-		"rs":     {"rs", "dexec/lang-rust", "1.0.1"},
-		"scala":  {"scala", "dexec/lang-scala", "1.0.1"},
-		"sh":     {"sh", "dexec/lang-bash", "1.0.1"},
-	}
 	return func(key string) DexecImage {
 		return innerMap[key]
+	}
+}()
+
+var LookupImageByName = func() func(string) DexecImage {
+	return func(name string) DexecImage {
+		for _, v := range innerMap {
+			if v.image == name {
+				return v
+			}
+		}
+		panic("no such image")
 	}
 }()
 
@@ -155,6 +170,7 @@ func RetrievePath(targetDirs []string) string {
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
 func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]string) {
+	useStdin := len(options[cli.Source]) == 0
 	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage.image, dexecImage.version)
 
 	client, err := docker.NewClientFromEnv()
@@ -178,6 +194,27 @@ func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]strin
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if useStdin {
+		lines := []string{}
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			lines = append(lines, scanner.Text())
+		}
+		if err := scanner.Err(); err != nil {
+			log.Fatal(scanner.Err())
+		}
+		newfilename := fmt.Sprintf("%s.%s", uuid.NewUUID().String(), dexecImage.extension)
+
+		util.WriteFile(newfilename, []byte(strings.Join(lines, "\n")))
+		options[cli.Source] = []string{newfilename}
+	}
+
+	defer func() {
+		if useStdin {
+			util.DeleteFile(options[cli.Source][0])
+		}
+	}()
 
 	var sourceBasenames []string
 	for _, source := range options[cli.Source] {
@@ -244,11 +281,17 @@ func validate(cliParser cli.CLI) bool {
 	valid := false
 	if len(cliParser.Options[cli.VersionFlag]) != 0 {
 		cli.DisplayVersion(cliParser.Filename)
-	} else if len(cliParser.Options[cli.Source]) == 0 ||
-		len(cliParser.Options[cli.HelpFlag]) != 0 ||
+	} else if len(cliParser.Options[cli.HelpFlag]) != 0 ||
 		len(cliParser.Options[cli.TargetDir]) > 1 ||
 		len(cliParser.Options[cli.SpecifyImage]) > 1 {
 		cli.DisplayHelp(cliParser.Filename)
+	} else if len(cliParser.Options[cli.Source]) == 0 {
+		if len(cliParser.Options[cli.Extension]) == 1 ||
+			len(cliParser.Options[cli.SpecifyImage]) == 1 {
+			valid = true
+		} else {
+			cli.DisplayHelp(cliParser.Filename)
+		}
 	} else {
 		valid = true
 	}
@@ -259,11 +302,30 @@ func main() {
 	cliParser := cli.ParseOsArgs(os.Args)
 
 	if validate(cliParser) {
-		extension := util.ExtractFileExtension(cliParser.Options[cli.Source][0])
-		image := LookupImageByExtension(extension)
-		if len(cliParser.Options[cli.SpecifyImage]) == 1 {
-			image = LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], extension)
+		useStdin := len(cliParser.Options[cli.Source]) == 0
+
+		var image DexecImage
+		if useStdin {
+			extensionOverride := len(cliParser.Options[cli.Extension]) == 1
+			if extensionOverride {
+				image = LookupImageByExtension(cliParser.Options[cli.Extension][0])
+			} else {
+				overrideImage := LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], "unknown")
+				image = LookupImageByName(overrideImage.image)
+				image.version = overrideImage.version
+			}
+		} else {
+			extension := util.ExtractFileExtension(cliParser.Options[cli.Source][0])
+			image = LookupImageByExtension(extension)
+			imageOverride := len(cliParser.Options[cli.SpecifyImage]) == 1
+			extensionOverride := len(cliParser.Options[cli.Extension]) == 1
+			if extensionOverride {
+				image = LookupImageByExtension(cliParser.Options[cli.Extension][0])
+			} else if imageOverride {
+				image = LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], extension)
+			}
 		}
+
 		RunDexecContainer(
 			image,
 			cliParser.Options,
