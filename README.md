@@ -108,15 +108,26 @@ As with sources, included files and directories are mounted using the default Do
 
 ### Override the image used by dexec
 
-```dexec``` stores a map of file extensions to Docker images and uses this to look up the right image to run for a given source file. This can be overridden in the following way:
+```dexec``` stores a map of file extensions to Docker images and uses this to look up the right image to run for a given source file. This can be overridden in the following ways:
+
+#### Override image by name/tag
 
 ```sh
-$ dexec foo.c --specify-image=dexec/lang-cpp
-$ dexec foo.c --specify-image dexec/lang-cpp
-$ dexec foo.c -s dexec/lang-cpp
+$ dexec foo.c --image=dexec/lang-cpp
+$ dexec foo.c --image dexec/lang-cpp
+$ dexec foo.c -m dexec/lang-cpp
 ```
 
-If no image version is specified, "latest" is used.
+This will cause ```dexec``` to attempt to use the supplied image. If no image version is specified, "latest" is used.
+
+#### Override image by file extension
+
+```sh
+$ dexec foo.c --extension=cpp
+$ dexec foo.c --extension cpp
+$ dexec foo.c -e cpp
+
+This will cause ```dexec``` to attempt to lookup the image for the supplied extension in its map.
 
 ### Force dexec to pull latest version of image
 

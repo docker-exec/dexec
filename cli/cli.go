@@ -65,13 +65,14 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	patternStandaloneA := regexp.MustCompile(`^-(a|-arg)$`)
 	patternStandaloneB := regexp.MustCompile(`^-(b|-build-arg)$`)
 	patternStandaloneI := regexp.MustCompile(`^-(i|-include)$`)
-	patternStandaloneS := regexp.MustCompile(`^-(s|-specify-image)$`)
+	patternStandaloneM := regexp.MustCompile(`^-(m|-image)$`)
 	patternStandaloneE := regexp.MustCompile(`^-(e|-extension)$`)
 	patternStandaloneC := regexp.MustCompile(`^-C$`)
 	patternCombinationA := regexp.MustCompile(`^--arg=(.+)$`)
 	patternCombinationB := regexp.MustCompile(`^--build-arg=(.+)$`)
 	patternCombinationI := regexp.MustCompile(`^--include=(.+)$`)
-	patternCombinationS := regexp.MustCompile(`^--specify-image=(.+)$`)
+	patternCombinationM := regexp.MustCompile(`^--image=(.+)$`)
+	patternCombinationE := regexp.MustCompile(`^--extension=(.+)$`)
 	patternSource := regexp.MustCompile(`^[^-_].+\..+`)
 	patternUpdateFlag := regexp.MustCompile(`^-(-update|u)$`)
 	patternHelpFlag := regexp.MustCompile(`^-(-help|h)$`)
@@ -84,7 +85,7 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return BuildArg, next, 2, nil
 	case patternStandaloneI.FindStringIndex(opt) != nil:
 		return Include, next, 2, nil
-	case patternStandaloneS.FindStringIndex(opt) != nil:
+	case patternStandaloneM.FindStringIndex(opt) != nil:
 		return SpecifyImage, next, 2, nil
 	case patternStandaloneE.FindStringIndex(opt) != nil:
 		return Extension, next, 2, nil
@@ -96,8 +97,10 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return BuildArg, patternCombinationB.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationI.FindStringIndex(opt) != nil:
 		return Include, patternCombinationI.FindStringSubmatch(opt)[1], 1, nil
-	case patternCombinationS.FindStringIndex(opt) != nil:
-		return SpecifyImage, patternCombinationS.FindStringSubmatch(opt)[1], 1, nil
+	case patternCombinationM.FindStringIndex(opt) != nil:
+		return SpecifyImage, patternCombinationM.FindStringSubmatch(opt)[1], 1, nil
+	case patternCombinationE.FindStringIndex(opt) != nil:
+		return SpecifyImage, patternCombinationE.FindStringSubmatch(opt)[1], 1, nil
 	case patternUpdateFlag.FindStringIndex(opt) != nil:
 		return UpdateFlag, "", 1, nil
 	case patternHelpFlag.FindStringIndex(opt) != nil:
