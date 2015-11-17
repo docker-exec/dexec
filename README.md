@@ -28,7 +28,7 @@ $ go get github.com/docker-exec/dexec
 
 ### Using Homebrew
 
-If you're on OSX you can install ```dexec``` with brew.
+If you're on OSX you can install the latest release of ```dexec``` with brew.
 
 ```sh
 $ brew install docker-exec/formula/dexec
