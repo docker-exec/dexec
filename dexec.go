@@ -196,11 +196,13 @@ func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]strin
 	}
 
 	if useStdin {
+		fmt.Fprintln(os.Stderr, "Enter your code. Ctrl-D to exit")
 		lines := []string{}
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
 			lines = append(lines, scanner.Text())
 		}
+		fmt.Fprintf(os.Stderr, "<Ctrl-D>\n")
 		if err := scanner.Err(); err != nil {
 			log.Fatal(scanner.Err())
 		}

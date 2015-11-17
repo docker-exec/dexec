@@ -126,8 +126,38 @@ This will cause ```dexec``` to attempt to use the supplied image. If no image ve
 $ dexec foo.c --extension=cpp
 $ dexec foo.c --extension cpp
 $ dexec foo.c -e cpp
+```
 
 This will cause ```dexec``` to attempt to lookup the image for the supplied extension in its map.
+
+### Reading from STDIN
+
+If no source files are specified, ```dexec``` will read from STDIN. Both manual entry and piping are supported. In both cases ```dexec``` writes the contents of STDIN to a temporary file, executes it and then removes it.
+
+```dexec``` requires either the [extension](#override-image-by-file-extension) or [image](#override-image-by-nametag) to be supplied.
+
+#### Manual entry
+
+Text may be entered until EOF is received (Ctrl-D).
+
+```sh
+$ dexec --extension js
+Enter your code. Ctrl-D to exit
+console.log('hello world')
+<Ctrl-D>
+
+hello world
+```
+
+#### Pipe
+
+```sh
+$ echo "console.log('hello world')" | dexec --extension js
+```
+
+```sh
+$ curl "http://some-url.com/foo.cpp" | dexec --image dexec/lang-cpp
+```
 
 ### Force dexec to pull latest version of image
 
