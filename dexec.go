@@ -20,81 +20,83 @@ import (
 // DexecImage consists of the file extension, Docker image name and Docker
 // image version to use for a given Docker Exec image.
 type DexecImage struct {
+	name      string
 	extension string
 	image     string
 	version   string
+}
+
+var innerMap = map[string]*DexecImage{
+	"c":      {"C", "c", "dexec/lang-c", "1.0.2"},
+	"clj":    {"Clojure", "clj", "dexec/lang-clojure", "1.0.1"},
+	"coffee": {"CoffeeScript", "coffee", "dexec/lang-coffee", "1.0.2"},
+	"cpp":    {"C++", "cpp", "dexec/lang-cpp", "1.0.2"},
+	"cs":     {"C#", "cs", "dexec/lang-csharp", "1.0.2"},
+	"d":      {"D", "d", "dexec/lang-d", "1.0.1"},
+	"erl":    {"Erlang", "erl", "dexec/lang-erlang", "1.0.1"},
+	"fs":     {"F#", "fs", "dexec/lang-fsharp", "1.0.2"},
+	"go":     {"Go", "go", "dexec/lang-go", "1.0.1"},
+	"groovy": {"Groovy", "groovy", "dexec/lang-groovy", "1.0.1"},
+	"hs":     {"Haskell", "hs", "dexec/lang-haskell", "1.0.1"},
+	"java":   {"Java", "java", "dexec/lang-java", "1.0.2"},
+	"lisp":   {"Lisp", "lisp", "dexec/lang-lisp", "1.0.1"},
+	"lua":    {"Lua", "lua", "dexec/lang-lua", "1.0.1"},
+	"js":     {"JavaScript", "js", "dexec/lang-node", "1.0.2"},
+	"nim":    {"Nim", "nim", "dexec/lang-nim", "1.0.1"},
+	"m":      {"Objective C", "m", "dexec/lang-objc", "1.0.1"},
+	"ml":     {"OCaml", "ml", "dexec/lang-ocaml", "1.0.1"},
+	"p6":     {"Perl 6", "p6", "dexec/lang-perl6", "1.0.1"},
+	"pl":     {"Perl", "pl", "dexec/lang-perl", "1.0.2"},
+	"php":    {"PHP", "php", "dexec/lang-php", "1.0.1"},
+	"py":     {"Python", "py", "dexec/lang-python", "1.0.2"},
+	"r":      {"R", "r", "dexec/lang-r", "1.0.1"},
+	"rkt":    {"Racket", "rkt", "dexec/lang-racket", "1.0.1"},
+	"rb":     {"Ruby", "rb", "dexec/lang-ruby", "1.0.1"},
+	"rs":     {"Rust", "rs", "dexec/lang-rust", "1.0.1"},
+	"scala":  {"Scala", "scala", "dexec/lang-scala", "1.0.1"},
+	"sh":     {"Bash", "sh", "dexec/lang-bash", "1.0.1"},
+}
+
+// LookupImageByExtension returns the image for a given extension.
+func LookupImageByExtension(key string) (*DexecImage, error) {
+	if val, ok := innerMap[key]; ok {
+		return val, nil
+	}
+	return nil, fmt.Errorf("Map does not contain key")
+}
+
+// LookupImageByName returns the image for a given image name.
+func LookupImageByName(name string) (*DexecImage, error) {
+	for _, v := range innerMap {
+		if v.image == name {
+			return v, nil
+		}
+	}
+	return nil, fmt.Errorf("Map does not contain key")
 }
 
 // LookupImageByOverride takes an image that has been specified by the user
 // to use instead of the one in the extension map. This function returns a
 // DexecImage struct containing the image name & version, as well as the
 // file extension that was passed in.
-func LookupImageByOverride(image string, extension string) DexecImage {
+func LookupImageByOverride(image string, extension string) (*DexecImage, error) {
 	patternImage := regexp.MustCompile(`(.*):(.*)`)
 	imageMatch := patternImage.FindStringSubmatch(image)
 	if len(imageMatch) > 0 {
-		return DexecImage{
+		return &DexecImage{
+			"Unknown",
 			extension,
 			imageMatch[1],
 			imageMatch[2],
-		}
+		}, nil
 	}
-	return DexecImage{
+	return &DexecImage{
+		"Unknown",
 		extension,
 		image,
 		"latest",
-	}
+	}, nil
 }
-
-var innerMap = map[string]DexecImage{
-	"c":      {"c", "dexec/lang-c", "1.0.2"},
-	"clj":    {"clj", "dexec/lang-clojure", "1.0.1"},
-	"coffee": {"coffee", "dexec/lang-coffee", "1.0.2"},
-	"cpp":    {"cpp", "dexec/lang-cpp", "1.0.2"},
-	"cs":     {"cs", "dexec/lang-csharp", "1.0.2"},
-	"d":      {"d", "dexec/lang-d", "1.0.1"},
-	"erl":    {"erl", "dexec/lang-erlang", "1.0.1"},
-	"fs":     {"fs", "dexec/lang-fsharp", "1.0.2"},
-	"go":     {"go", "dexec/lang-go", "1.0.1"},
-	"groovy": {"groovy", "dexec/lang-groovy", "1.0.1"},
-	"hs":     {"hs", "dexec/lang-haskell", "1.0.1"},
-	"java":   {"java", "dexec/lang-java", "1.0.2"},
-	"lisp":   {"lisp", "dexec/lang-lisp", "1.0.1"},
-	"lua":    {"lua", "dexec/lang-lua", "1.0.1"},
-	"js":     {"js", "dexec/lang-node", "1.0.2"},
-	"nim":    {"nim", "dexec/lang-nim", "1.0.1"},
-	"m":      {"m", "dexec/lang-objc", "1.0.1"},
-	"ml":     {"ml", "dexec/lang-ocaml", "1.0.1"},
-	"p6":     {"p6", "dexec/lang-perl6", "1.0.1"},
-	"pl":     {"pl", "dexec/lang-perl", "1.0.2"},
-	"php":    {"php", "dexec/lang-php", "1.0.1"},
-	"py":     {"py", "dexec/lang-python", "1.0.2"},
-	"r":      {"r", "dexec/lang-r", "1.0.1"},
-	"rkt":    {"rkt", "dexec/lang-racket", "1.0.1"},
-	"rb":     {"rb", "dexec/lang-ruby", "1.0.1"},
-	"rs":     {"rs", "dexec/lang-rust", "1.0.1"},
-	"scala":  {"scala", "dexec/lang-scala", "1.0.1"},
-	"sh":     {"sh", "dexec/lang-bash", "1.0.1"},
-}
-
-// LookupImageByExtension is a closure storing a dictionary mapping source
-// extensions to the names and versions of Docker Exec images.
-var LookupImageByExtension = func() func(string) DexecImage {
-	return func(key string) DexecImage {
-		return innerMap[key]
-	}
-}()
-
-var LookupImageByName = func() func(string) DexecImage {
-	return func(name string) DexecImage {
-		for _, v := range innerMap {
-			if v.image == name {
-				return v
-			}
-		}
-		panic("no such image")
-	}
-}()
 
 const dexecPath = "/tmp/dexec/build"
 const dexecImageTemplate = "%s:%s"
@@ -169,7 +171,7 @@ func RetrievePath(targetDirs []string) string {
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
-func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]string) {
+func RunDexecContainer(dexecImage *DexecImage, options map[cli.OptionType][]string) {
 	useStdin := len(options[cli.Source]) == 0
 	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage.image, dexecImage.version)
 
@@ -280,12 +282,6 @@ func RunDexecContainer(dexecImage DexecImage, options map[cli.OptionType][]strin
 }
 
 func validate(cliParser cli.CLI) bool {
-	// if !docker.IsDockerPresent() {
-	// 	log.Fatal("Docker not found")
-	// } else if !docker.IsDockerRunning() {
-	// 	log.Fatal("Docker not running")
-	// }
-
 	valid := false
 	if len(cliParser.Options[cli.VersionFlag]) != 0 {
 		cli.DisplayVersion(cliParser.Filename)
@@ -306,37 +302,54 @@ func validate(cliParser cli.CLI) bool {
 	return valid
 }
 
+func validateDocker() error {
+	client, err := docker.NewClientFromEnv()
+	if err != nil {
+		return err
+	}
+	if client.Ping() != nil {
+		return err
+	}
+	return nil
+}
+
+func imageFromOptions(cliParser cli.CLI) *DexecImage {
+	useStdin := len(cliParser.Options[cli.Source]) == 0
+	var image *DexecImage
+	if useStdin {
+		extensionOverride := len(cliParser.Options[cli.Extension]) == 1
+		if extensionOverride {
+			image, _ = LookupImageByExtension(cliParser.Options[cli.Extension][0])
+		} else {
+			overrideImage, _ := LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], "unknown")
+			image, _ = LookupImageByName(overrideImage.image)
+			image.version = overrideImage.version
+		}
+	} else {
+		extension := util.ExtractFileExtension(cliParser.Options[cli.Source][0])
+		image, _ = LookupImageByExtension(extension)
+		imageOverride := len(cliParser.Options[cli.SpecifyImage]) == 1
+		extensionOverride := len(cliParser.Options[cli.Extension]) == 1
+		if extensionOverride {
+			image, _ = LookupImageByExtension(cliParser.Options[cli.Extension][0])
+		} else if imageOverride {
+			image, _ = LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], extension)
+		}
+	}
+	return image
+}
+
 func main() {
 	cliParser := cli.ParseOsArgs(os.Args)
 
 	if validate(cliParser) {
-		useStdin := len(cliParser.Options[cli.Source]) == 0
-
-		var image DexecImage
-		if useStdin {
-			extensionOverride := len(cliParser.Options[cli.Extension]) == 1
-			if extensionOverride {
-				image = LookupImageByExtension(cliParser.Options[cli.Extension][0])
-			} else {
-				overrideImage := LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], "unknown")
-				image = LookupImageByName(overrideImage.image)
-				image.version = overrideImage.version
-			}
+		if err := validateDocker(); err != nil {
+			log.Fatal(err)
 		} else {
-			extension := util.ExtractFileExtension(cliParser.Options[cli.Source][0])
-			image = LookupImageByExtension(extension)
-			imageOverride := len(cliParser.Options[cli.SpecifyImage]) == 1
-			extensionOverride := len(cliParser.Options[cli.Extension]) == 1
-			if extensionOverride {
-				image = LookupImageByExtension(cliParser.Options[cli.Extension][0])
-			} else if imageOverride {
-				image = LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], extension)
-			}
+			RunDexecContainer(
+				imageFromOptions(cliParser),
+				cliParser.Options,
+			)
 		}
-
-		RunDexecContainer(
-			image,
-			cliParser.Options,
-		)
 	}
 }

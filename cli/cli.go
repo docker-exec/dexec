@@ -100,7 +100,7 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	case patternCombinationM.FindStringIndex(opt) != nil:
 		return SpecifyImage, patternCombinationM.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationE.FindStringIndex(opt) != nil:
-		return SpecifyImage, patternCombinationE.FindStringSubmatch(opt)[1], 1, nil
+		return Extension, patternCombinationE.FindStringSubmatch(opt)[1], 1, nil
 	case patternUpdateFlag.FindStringIndex(opt) != nil:
 		return UpdateFlag, "", 1, nil
 	case patternHelpFlag.FindStringIndex(opt) != nil:

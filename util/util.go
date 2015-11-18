@@ -40,12 +40,14 @@ func ExtractFileExtension(filename string) string {
 	return patternFilename.FindStringSubmatch(filename)[1]
 }
 
+// WriteFile writes a file.
 func WriteFile(filename string, content []byte) {
 	if err := ioutil.WriteFile(filename, content, 0644); err != nil {
 		log.Fatalf("Unable to write %s\n%q", filename, err)
 	}
 }
 
+// DeleteFile deletes a file.
 func DeleteFile(filename string) {
 	if err := os.Remove(filename); err != nil {
 		log.Fatalf("Unable to delete %s\n%q", filename, err)

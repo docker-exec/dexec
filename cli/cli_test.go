@@ -87,15 +87,15 @@ func TestGet(t *testing.T) {
 			WantedData{Include, "foo", 1, ""},
 		},
 		{
-			OptionData{"-s", "foo"},
+			OptionData{"-m", "foo"},
 			WantedData{SpecifyImage, "foo", 2, ""},
 		},
 		{
-			OptionData{"--specify-image", "foo"},
+			OptionData{"--image", "foo"},
 			WantedData{SpecifyImage, "foo", 2, ""},
 		},
 		{
-			OptionData{"--specify-image=foo", ""},
+			OptionData{"--image=foo", ""},
 			WantedData{SpecifyImage, "foo", 1, ""},
 		},
 		{
@@ -118,11 +118,11 @@ func TestGet(t *testing.T) {
 	for _, c := range cases {
 		gotOptionType, gotOptionValue, gotChomped, _ := ArgToOption(c.opt.first, c.opt.second)
 		if gotOptionType != c.want.optionType {
-			t.Errorf("ParseOsArgs %q != %q", gotOptionType, c.want.optionType)
+			t.Errorf("ParseOsArgs %d != %d", gotOptionType, c.want.optionType)
 		} else if gotOptionValue != c.want.value {
-			t.Errorf("ParseOsArgs %q != %q", gotOptionValue, c.want.value)
+			t.Errorf("ParseOsArgs %s != %s", gotOptionValue, c.want.value)
 		} else if gotChomped != c.want.chomped {
-			t.Errorf("ParseOsArgs %q != %q", gotChomped, c.want.chomped)
+			t.Errorf("ParseOsArgs %d != %d", gotChomped, c.want.chomped)
 		}
 	}
 }
@@ -182,7 +182,7 @@ func TestSpecifyImage(t *testing.T) {
 		want   []string
 	}{
 		{
-			[]string{"filename", "-s", "foo", "--specify-image", "bar", "--specify-image=foobar"},
+			[]string{"filename", "-m", "foo", "--image", "bar", "--image=foobar"},
 			[]string{"foo", "bar", "foobar"},
 		},
 	}
@@ -190,6 +190,24 @@ func TestSpecifyImage(t *testing.T) {
 		got := ParseOsArgs(c.osArgs)
 		if !reflect.DeepEqual(got.Options[SpecifyImage], c.want) {
 			t.Errorf("ParseOsArgs %q != %q", got.Options[SpecifyImage], c.want)
+		}
+	}
+}
+
+func TestSpecifyExtension(t *testing.T) {
+	cases := []struct {
+		osArgs []string
+		want   []string
+	}{
+		{
+			[]string{"filename", "-e", "foo", "--extension", "bar", "--extension=foobar"},
+			[]string{"foo", "bar", "foobar"},
+		},
+	}
+	for _, c := range cases {
+		got := ParseOsArgs(c.osArgs)
+		if !reflect.DeepEqual(got.Options[Extension], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[Extension], c.want)
 		}
 	}
 }
