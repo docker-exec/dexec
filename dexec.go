@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 
 	"code.google.com/p/go-uuid/uuid"
 
@@ -307,10 +308,20 @@ func validateDocker() error {
 	if err != nil {
 		return err
 	}
-	if client.Ping() != nil {
+
+	timeout := time.After(5 * time.Second)
+
+	ch := make(chan error, 1)
+	go func() {
+		ch <- client.Ping()
+	}()
+
+	select {
+	case err := <-ch:
 		return err
+	case <-timeout:
+		return fmt.Errorf("Request to Docker host timed out")
 	}
-	return nil
 }
 
 func imageFromOptions(cliParser cli.CLI) *DexecImage {
