@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"time"
 
@@ -30,7 +27,6 @@ type DexecImage struct {
 const dexecPath = "/tmp/dexec/build"
 const dexecImageTemplate = "%s:%s"
 const dexecVolumeTemplate = "%s/%s:%s/%s"
-const dexecSanitisedWindowsPathPattern = "/%s%s"
 
 var innerMap = map[string]*DexecImage{
 	"c":      {"C", "c", "dexec/lang-c", "1.0.2"},
@@ -164,57 +160,6 @@ func BuildVolumeArgs(path string, targets []string) []string {
 	return volumeArgs
 }
 
-// SanitisePath takes an absolute path as provided by filepath.Abs() and
-// makes it ready to be passed to Docker based on the current OS. So far
-// the only OS format that requires transforming is Windows which is provided
-// in the form 'C:\some\path' but Docker requires '/c/some/path'.
-func SanitisePath(path string, platform string) string {
-	sanitised := path
-	if platform == "windows" {
-		windowsPathPattern := regexp.MustCompile("^([A-Za-z]):(.*)")
-		match := windowsPathPattern.FindStringSubmatch(path)
-
-		driveLetter := strings.ToLower(match[1])
-		pathRemainder := strings.Replace(match[2], "\\", "/", -1)
-
-		sanitised = fmt.Sprintf(dexecSanitisedWindowsPathPattern, driveLetter, pathRemainder)
-	}
-	return sanitised
-}
-
-// RetrievePath takes an array whose first element may contain an overridden
-// path and converts either this, or the default of "." to an absolute path
-// using Go's file utilities. This is then passed to SanitisedPath with the
-// current OS to get it into a Docker ready format.
-func RetrievePath(targetDirs []string) string {
-	path := "."
-	if len(targetDirs) > 0 {
-		path = targetDirs[0]
-	}
-	absPath, _ := filepath.Abs(path)
-	return SanitisePath(absPath, runtime.GOOS)
-}
-
-func readStdin() []string {
-	stat, _ := os.Stdin.Stat()
-	isPipe := (stat.Mode() & os.ModeCharDevice) == 0
-	if !isPipe {
-		fmt.Fprintln(os.Stderr, "Enter your code. Ctrl-D to exit")
-	}
-	lines := []string{}
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	if !isPipe {
-		fmt.Fprintf(os.Stderr, "<Ctrl-D>\n")
-	}
-	if err := scanner.Err(); err != nil {
-		log.Fatal(scanner.Err())
-	}
-	return lines
-}
-
 func fetchImage(name string, tag string, update bool, client *docker.Client) error {
 	dockerImage := fmt.Sprintf(dexecImageTemplate, name, tag)
 
@@ -237,6 +182,7 @@ func fetchImage(name string, tag string, update bool, client *docker.Client) err
 func RunDexecContainer(options map[cli.OptionType][]string) {
 	dexecImage := imageFromOptions(options)
 	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage.image, dexecImage.version)
+	updateImage := len(options[cli.UpdateFlag]) > 0
 
 	client, err := docker.NewClientFromEnv()
 
@@ -247,15 +193,16 @@ func RunDexecContainer(options map[cli.OptionType][]string) {
 	if err := fetchImage(
 		dexecImage.image,
 		dexecImage.version,
-		len(options[cli.UpdateFlag]) > 0,
+		updateImage,
 		client); err != nil {
 		log.Fatal(err)
 	}
 
 	if useStdin := len(options[cli.Source]) == 0; useStdin {
+		lines := util.ReadStdin("Enter your code. Ctrl-D to exit", "<Ctrl-D>")
 		tmpFile := fmt.Sprintf("%s.%s", uuid.NewUUID().String(), dexecImage.extension)
-		util.WriteFile(tmpFile, []byte(strings.Join(readStdin(), "\n")))
 
+		util.WriteFile(tmpFile, []byte(strings.Join(lines, "\n")))
 		defer func() {
 			util.DeleteFile(tmpFile)
 		}()
@@ -288,7 +235,7 @@ func RunDexecContainer(options map[cli.OptionType][]string) {
 
 	if err = client.StartContainer(container.ID, &docker.HostConfig{
 		Binds: BuildVolumeArgs(
-			RetrievePath(options[cli.TargetDir]),
+			util.RetrievePath(options[cli.TargetDir]),
 			append(options[cli.Source], options[cli.Include]...)),
 	}); err != nil {
 		log.Fatal(err)
