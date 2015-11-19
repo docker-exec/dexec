@@ -88,15 +88,15 @@ func TestGet(t *testing.T) {
 		},
 		{
 			OptionData{"-m", "foo"},
-			WantedData{SpecifyImage, "foo", 2, ""},
+			WantedData{Image, "foo", 2, ""},
 		},
 		{
 			OptionData{"--image", "foo"},
-			WantedData{SpecifyImage, "foo", 2, ""},
+			WantedData{Image, "foo", 2, ""},
 		},
 		{
 			OptionData{"--image=foo", ""},
-			WantedData{SpecifyImage, "foo", 1, ""},
+			WantedData{Image, "foo", 1, ""},
 		},
 		{
 			OptionData{"--help", ""},
@@ -176,7 +176,7 @@ func TestSources(t *testing.T) {
 	}
 }
 
-func TestSpecifyImage(t *testing.T) {
+func TestImage(t *testing.T) {
 	cases := []struct {
 		osArgs []string
 		want   []string
@@ -188,13 +188,13 @@ func TestSpecifyImage(t *testing.T) {
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)
-		if !reflect.DeepEqual(got.Options[SpecifyImage], c.want) {
-			t.Errorf("ParseOsArgs %q != %q", got.Options[SpecifyImage], c.want)
+		if !reflect.DeepEqual(got.Options[Image], c.want) {
+			t.Errorf("ParseOsArgs %q != %q", got.Options[Image], c.want)
 		}
 	}
 }
 
-func TestSpecifyExtension(t *testing.T) {
+func TestExtension(t *testing.T) {
 	cases := []struct {
 		osArgs []string
 		want   []string

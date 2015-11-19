@@ -28,9 +28,9 @@ const (
 	// executing code.
 	Include OptionType = iota
 
-	// SpecifyImage indicates that the option value should be used to
+	// Image indicates that the option value should be used to
 	// override the image worked out based on the file extension.
-	SpecifyImage OptionType = iota
+	Image OptionType = iota
 
 	// TargetDir indicates that the option specifies a custom location (i.e.
 	// not the current working directory) to which the sources are
@@ -86,7 +86,7 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	case patternStandaloneI.FindStringIndex(opt) != nil:
 		return Include, next, 2, nil
 	case patternStandaloneM.FindStringIndex(opt) != nil:
-		return SpecifyImage, next, 2, nil
+		return Image, next, 2, nil
 	case patternStandaloneE.FindStringIndex(opt) != nil:
 		return Extension, next, 2, nil
 	case patternStandaloneC.FindStringIndex(opt) != nil:
@@ -98,7 +98,7 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	case patternCombinationI.FindStringIndex(opt) != nil:
 		return Include, patternCombinationI.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationM.FindStringIndex(opt) != nil:
-		return SpecifyImage, patternCombinationM.FindStringSubmatch(opt)[1], 1, nil
+		return Image, patternCombinationM.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationE.FindStringIndex(opt) != nil:
 		return Extension, patternCombinationE.FindStringSubmatch(opt)[1], 1, nil
 	case patternUpdateFlag.FindStringIndex(opt) != nil:
@@ -154,19 +154,21 @@ func DisplayHelp(filename string) {
 	fmt.Printf("\t%s - Execute code in many languages with Docker!\n", filename)
 	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Printf("\t%s [options]\n", filename)
+	fmt.Printf("\t%s [options] <source files...>\n", filename)
+	fmt.Println()
+	fmt.Println("\tIf no source files are specified, input will be read from stdin. This requires")
+	fmt.Println("\tthe image or extension to be set using --extension or --image.")
 	fmt.Println()
 	fmt.Println("Options:")
-	fmt.Printf("\t%-50s%s\n", "<source file>", "Execute source file")
-	fmt.Printf("\t%-50s%s\n", "-C <dir>", "Specify source directory")
-	fmt.Printf("\t%-50s%s\n", "--arg, -a <argument>", "Pass <argument> to the executing code")
-	fmt.Printf("\t%-50s%s\n", "--build-arg, -b <build argument>", "Pass <build argument> to compiler")
-	fmt.Printf("\t%-50s%s\n", "--include, -i <file|path>", "Mount local <file|path> in dexec container")
-	fmt.Printf("\t%-50s%s\n", "--extension, -e <extension>", "Override the extension used to select image (required for stdin)")
-	fmt.Printf("\t%-50s%s\n", "--specify-image, -s <docker image>", "Override the image used with <docker image>")
-	fmt.Printf("\t%-50s%s\n", "--update, -u", "Update")
-	fmt.Printf("\t%-50s%s\n", "--help, -h", "Show help")
-	fmt.Printf("\t%-50s%s\n", "--version, -v", "Display version info")
+	fmt.Printf("\t%-36s%s\n", "-C <dir>", "Specify source directory")
+	fmt.Printf("\t%-36s%s\n", "--arg, -a <argument>", "Pass <argument> to the executing code")
+	fmt.Printf("\t%-36s%s\n", "--build-arg, -b <build argument>", "Pass <build argument> to compiler")
+	fmt.Printf("\t%-36s%s\n", "--include, -i <file|path>", "Mount local <file|path> in dexec container")
+	fmt.Printf("\t%-36s%s\n", "--extension, -e <extension>", "Override the extension used to select image")
+	fmt.Printf("\t%-36s%s\n", "--image, -m <docker image>", "Override the image used with <docker image>")
+	fmt.Printf("\t%-36s%s\n", "--update, -u", "Force update of image")
+	fmt.Printf("\t%-36s%s\n", "--help, -h", "Show help")
+	fmt.Printf("\t%-36s%s\n", "--version, -v", "Display version info")
 }
 
 // DisplayVersion prints the version information for the program.

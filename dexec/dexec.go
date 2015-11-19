@@ -26,13 +26,13 @@ const dexecVolumeTemplate = "%s/%s:%s/%s"
 // ImageFromOptions returns an image from a set of options.
 func ImageFromOptions(options map[cli.OptionType][]string) (image *Image, err error) {
 	useExtension := len(options[cli.Extension]) == 1
-	useImage := len(options[cli.SpecifyImage]) == 1
+	useImage := len(options[cli.Image]) == 1
 
 	if useStdin := len(options[cli.Source]) == 0; useStdin {
 		if useExtension {
 			image, err = LookupImageByExtension(options[cli.Extension][0])
 		} else if useImage {
-			overrideImage, err := LookupImageByOverride(options[cli.SpecifyImage][0], "unknown")
+			overrideImage, err := LookupImageByOverride(options[cli.Image][0], "unknown")
 			if err != nil {
 				return nil, err
 			}
@@ -45,7 +45,7 @@ func ImageFromOptions(options map[cli.OptionType][]string) (image *Image, err er
 		if extension := util.ExtractFileExtension(options[cli.Source][0]); useExtension {
 			image, err = LookupImageByExtension(options[cli.Extension][0])
 		} else if useImage {
-			image, err = LookupImageByOverride(options[cli.SpecifyImage][0], extension)
+			image, err = LookupImageByOverride(options[cli.Image][0], extension)
 		} else {
 			image, err = LookupImageByExtension(extension)
 		}

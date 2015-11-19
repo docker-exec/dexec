@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"code.google.com/p/go-uuid/uuid"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/docker-exec/dexec/cli"
 	"github.com/docker-exec/dexec/dexec"
@@ -45,7 +45,7 @@ func RunDexecContainer(cliParser cli.CLI) {
 
 	if useStdin := len(options[cli.Source]) == 0; useStdin {
 		lines := util.ReadStdin("Enter your code. Ctrl-D to exit", "<Ctrl-D>")
-		tmpFile := fmt.Sprintf("%s.%s", uuid.NewUUID().String(), dexecImage.Extension)
+		tmpFile := fmt.Sprintf("%s.%s", uuid.NewV4(), dexecImage.Extension)
 
 		util.WriteFile(tmpFile, []byte(strings.Join(lines, "\n")))
 		defer func() {
@@ -110,7 +110,7 @@ func validate(cliParser cli.CLI) bool {
 
 	hasVersionFlag := len(options[cli.VersionFlag]) == 1
 	hasExtension := len(options[cli.Extension]) == 1
-	hasImage := len(options[cli.SpecifyImage]) == 1
+	hasImage := len(options[cli.Image]) == 1
 	hasSources := len(options[cli.Source]) > 0
 
 	if hasSources || hasImage || hasExtension {
