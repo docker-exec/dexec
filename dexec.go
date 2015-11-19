@@ -215,6 +215,22 @@ func readStdin() []string {
 	return lines
 }
 
+func fetchImage(name string, tag string, update bool, client *docker.Client) error {
+	dockerImage := fmt.Sprintf(dexecImageTemplate, name, tag)
+
+	if _, err := client.InspectImage(dockerImage); update || err != nil {
+		client.PullImage(docker.PullImageOptions{
+			Repository: name,
+			Tag:        tag,
+		}, docker.AuthConfiguration{})
+
+		if _, err = client.InspectImage(dockerImage); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
@@ -223,23 +239,16 @@ func RunDexecContainer(options map[cli.OptionType][]string) {
 	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage.image, dexecImage.version)
 
 	client, err := docker.NewClientFromEnv()
-	image, err := client.InspectImage(dockerImage)
-
-	if len(options[cli.UpdateFlag]) > 0 || image == nil {
-		client.PullImage(docker.PullImageOptions{
-			Repository: dexecImage.image,
-			Tag:        dexecImage.version,
-		}, docker.AuthConfiguration{})
-
-		image, err = client.InspectImage(dockerImage)
-		if err != nil {
-			log.Fatal(err)
-		} else if image == nil {
-			log.Fatalf("Error retrieving image %s:%s", dexecImage.image, dexecImage.version)
-		}
-	}
 
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := fetchImage(
+		dexecImage.image,
+		dexecImage.version,
+		len(options[cli.UpdateFlag]) > 0,
+		client); err != nil {
 		log.Fatal(err)
 	}
 
@@ -277,17 +286,15 @@ func RunDexecContainer(options map[cli.OptionType][]string) {
 		log.Fatal(err)
 	}
 
-	err = client.StartContainer(container.ID, &docker.HostConfig{
+	if err = client.StartContainer(container.ID, &docker.HostConfig{
 		Binds: BuildVolumeArgs(
 			RetrievePath(options[cli.TargetDir]),
 			append(options[cli.Source], options[cli.Include]...)),
-	})
-
-	if err != nil {
+	}); err != nil {
 		log.Fatal(err)
 	}
 
-	client.AttachToContainer(docker.AttachToContainerOptions{
+	if err = client.AttachToContainer(docker.AttachToContainerOptions{
 		Container:    container.ID,
 		OutputStream: os.Stdout,
 		ErrorStream:  os.Stderr,
@@ -295,16 +302,13 @@ func RunDexecContainer(options map[cli.OptionType][]string) {
 		Stdout:       true,
 		Stderr:       true,
 		Logs:         true,
-	})
-
-	if err != nil {
+	}); err != nil {
 		log.Fatal(err)
 	}
 
-	err = client.RemoveContainer(docker.RemoveContainerOptions{
+	if err = client.RemoveContainer(docker.RemoveContainerOptions{
 		ID: container.ID,
-	})
-	if err != nil {
+	}); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -336,17 +340,15 @@ func validateDocker() error {
 		return err
 	}
 
-	timeout := time.After(5 * time.Second)
-
-	ch := make(chan error, 1)
+	ping := make(chan error, 1)
 	go func() {
-		ch <- client.Ping()
+		ping <- client.Ping()
 	}()
 
 	select {
-	case err := <-ch:
+	case err := <-ping:
 		return err
-	case <-timeout:
+	case <-time.After(5 * time.Second):
 		return fmt.Errorf("Request to Docker host timed out")
 	}
 }
