@@ -1,4 +1,4 @@
-package main
+package dexec
 
 import (
 	"reflect"
@@ -30,18 +30,18 @@ func TestLookupImageByOverride(t *testing.T) {
 		wantVersion   string
 		wantError     error
 	}{
-		{"dexec/cpp", "c", "c", "cpp", "latest", nil},
-		{"dexec/some-language", "ext", "ext", "some-language", "latest", nil},
-		{"dexec/some-language:1.2.3", "ext", "ext", "some-language", "1.2.3", nil},
+		{"dexec/cpp", "c", "c", "dexec/cpp", "latest", nil},
+		{"dexec/some-language", "ext", "ext", "dexec/some-language", "latest", nil},
+		{"dexec/some-language:1.2.3", "ext", "ext", "dexec/some-language", "1.2.3", nil},
 	}
 	for _, c := range cases {
 		got, err := LookupImageByOverride(c.image, c.extension)
-		if got.extension != c.wantExtension {
-			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, got.image, c.wantImage)
-		} else if got.extension != c.wantExtension {
-			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, got.extension, c.wantExtension)
-		} else if got.version != c.wantVersion {
-			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, got.version, c.wantVersion)
+		if got.Image != c.wantImage {
+			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, got.Image, c.wantImage)
+		} else if got.Extension != c.wantExtension {
+			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, got.Extension, c.wantExtension)
+		} else if got.Version != c.wantVersion {
+			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, got.Version, c.wantVersion)
 		} else if err != c.wantError {
 			t.Errorf("LookupImageByOverride(%q, %q) %q != %q", c.image, c.extension, err, c.wantError)
 		}
@@ -87,12 +87,12 @@ func TestLookupImageByExtension(t *testing.T) {
 	}
 	for _, c := range cases {
 		got, err := LookupImageByExtension(c.extension)
-		if got.image != c.wantImage {
-			t.Errorf("TestLookupExtensionByImage(%q) %q != %q", c.extension, got.image, c.wantImage)
-		} else if got.extension != c.wantExtension {
-			t.Errorf("TestLookupExtensionByImage(%q) %q != %q", c.extension, got.extension, c.wantExtension)
-		} else if got.version != c.wantVersion {
-			t.Errorf("TestLookupExtensionByImage(%q) %q != %q", c.extension, got.version, c.wantVersion)
+		if got.Image != c.wantImage {
+			t.Errorf("TestLookupExtensionByImage(%q) %q != %q", c.extension, got.Image, c.wantImage)
+		} else if got.Extension != c.wantExtension {
+			t.Errorf("TestLookupExtensionByImage(%q) %q != %q", c.extension, got.Extension, c.wantExtension)
+		} else if got.Version != c.wantVersion {
+			t.Errorf("TestLookupExtensionByImage(%q) %q != %q", c.extension, got.Version, c.wantVersion)
 		} else if err != c.wantError {
 			t.Errorf("TestLookupExtensionByImage(%q) %q != %q", c.extension, err, c.wantError)
 		}
