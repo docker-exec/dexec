@@ -27,6 +27,11 @@ type DexecImage struct {
 	version   string
 }
 
+const dexecPath = "/tmp/dexec/build"
+const dexecImageTemplate = "%s:%s"
+const dexecVolumeTemplate = "%s/%s:%s/%s"
+const dexecSanitisedWindowsPathPattern = "/%s%s"
+
 var innerMap = map[string]*DexecImage{
 	"c":      {"C", "c", "dexec/lang-c", "1.0.2"},
 	"clj":    {"Clojure", "clj", "dexec/lang-clojure", "1.0.1"},
@@ -99,10 +104,31 @@ func LookupImageByOverride(image string, extension string) (*DexecImage, error) 
 	}, nil
 }
 
-const dexecPath = "/tmp/dexec/build"
-const dexecImageTemplate = "%s:%s"
-const dexecVolumeTemplate = "%s/%s:%s/%s"
-const dexecSanitisedWindowsPathPattern = "/%s%s"
+func imageFromOptions(options map[cli.OptionType][]string) *DexecImage {
+	var image *DexecImage
+
+	if useStdin := len(options[cli.Source]) == 0; useStdin {
+		extensionOverride := len(options[cli.Extension]) == 1
+		if extensionOverride {
+			image, _ = LookupImageByExtension(options[cli.Extension][0])
+		} else {
+			overrideImage, _ := LookupImageByOverride(options[cli.SpecifyImage][0], "unknown")
+			image, _ = LookupImageByName(overrideImage.image)
+			image.version = overrideImage.version
+		}
+	} else {
+		extension := util.ExtractFileExtension(options[cli.Source][0])
+		image, _ = LookupImageByExtension(extension)
+		imageOverride := len(options[cli.SpecifyImage]) == 1
+		extensionOverride := len(options[cli.Extension]) == 1
+		if extensionOverride {
+			image, _ = LookupImageByExtension(options[cli.Extension][0])
+		} else if imageOverride {
+			image, _ = LookupImageByOverride(options[cli.SpecifyImage][0], extension)
+		}
+	}
+	return image
+}
 
 // ExtractBasenameAndPermission takes an include string and splits it into
 // its file or folder name and the permission string if present or the empty
@@ -169,15 +195,34 @@ func RetrievePath(targetDirs []string) string {
 	return SanitisePath(absPath, runtime.GOOS)
 }
 
+func readStdin() []string {
+	stat, _ := os.Stdin.Stat()
+	isPipe := (stat.Mode() & os.ModeCharDevice) == 0
+	if !isPipe {
+		fmt.Fprintln(os.Stderr, "Enter your code. Ctrl-D to exit")
+	}
+	lines := []string{}
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	if !isPipe {
+		fmt.Fprintf(os.Stderr, "<Ctrl-D>\n")
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatal(scanner.Err())
+	}
+	return lines
+}
+
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
-func RunDexecContainer(dexecImage *DexecImage, options map[cli.OptionType][]string) {
-	useStdin := len(options[cli.Source]) == 0
+func RunDexecContainer(options map[cli.OptionType][]string) {
+	dexecImage := imageFromOptions(options)
 	dockerImage := fmt.Sprintf(dexecImageTemplate, dexecImage.image, dexecImage.version)
 
 	client, err := docker.NewClientFromEnv()
-
 	image, err := client.InspectImage(dockerImage)
 
 	if len(options[cli.UpdateFlag]) > 0 || image == nil {
@@ -190,7 +235,7 @@ func RunDexecContainer(dexecImage *DexecImage, options map[cli.OptionType][]stri
 		if err != nil {
 			log.Fatal(err)
 		} else if image == nil {
-			log.Fatal("image was nil")
+			log.Fatalf("Error retrieving image %s:%s", dexecImage.image, dexecImage.version)
 		}
 	}
 
@@ -198,34 +243,16 @@ func RunDexecContainer(dexecImage *DexecImage, options map[cli.OptionType][]stri
 		log.Fatal(err)
 	}
 
-	if useStdin {
-		stat, _ := os.Stdin.Stat()
-		isPipe := (stat.Mode() & os.ModeCharDevice) == 0
-		if !isPipe {
-			fmt.Fprintln(os.Stderr, "Enter your code. Ctrl-D to exit")
-		}
-		lines := []string{}
-		scanner := bufio.NewScanner(os.Stdin)
-		for scanner.Scan() {
-			lines = append(lines, scanner.Text())
-		}
-		if !isPipe {
-			fmt.Fprintf(os.Stderr, "<Ctrl-D>\n")
-		}
-		if err := scanner.Err(); err != nil {
-			log.Fatal(scanner.Err())
-		}
-		newfilename := fmt.Sprintf("%s.%s", uuid.NewUUID().String(), dexecImage.extension)
+	if useStdin := len(options[cli.Source]) == 0; useStdin {
+		tmpFile := fmt.Sprintf("%s.%s", uuid.NewUUID().String(), dexecImage.extension)
+		util.WriteFile(tmpFile, []byte(strings.Join(readStdin(), "\n")))
 
-		util.WriteFile(newfilename, []byte(strings.Join(lines, "\n")))
-		options[cli.Source] = []string{newfilename}
+		defer func() {
+			util.DeleteFile(tmpFile)
+		}()
+
+		options[cli.Source] = []string{tmpFile}
 	}
-
-	defer func() {
-		if useStdin {
-			util.DeleteFile(options[cli.Source][0])
-		}
-	}()
 
 	var sourceBasenames []string
 	for _, source := range options[cli.Source] {
@@ -283,24 +310,24 @@ func RunDexecContainer(dexecImage *DexecImage, options map[cli.OptionType][]stri
 }
 
 func validate(cliParser cli.CLI) bool {
-	valid := false
-	if len(cliParser.Options[cli.VersionFlag]) != 0 {
-		cli.DisplayVersion(cliParser.Filename)
-	} else if len(cliParser.Options[cli.HelpFlag]) != 0 ||
-		len(cliParser.Options[cli.TargetDir]) > 1 ||
-		len(cliParser.Options[cli.SpecifyImage]) > 1 {
-		cli.DisplayHelp(cliParser.Filename)
-	} else if len(cliParser.Options[cli.Source]) == 0 {
-		if len(cliParser.Options[cli.Extension]) == 1 ||
-			len(cliParser.Options[cli.SpecifyImage]) == 1 {
-			valid = true
-		} else {
-			cli.DisplayHelp(cliParser.Filename)
-		}
-	} else {
-		valid = true
+	options := cliParser.Options
+
+	hasVersionFlag := len(options[cli.VersionFlag]) == 1
+	hasExtension := len(options[cli.Extension]) == 1
+	hasImage := len(options[cli.SpecifyImage]) == 1
+	hasSources := len(options[cli.Source]) > 0
+
+	if hasSources || hasImage || hasExtension {
+		return true
 	}
-	return valid
+
+	if hasVersionFlag {
+		cli.DisplayVersion(cliParser.Filename)
+		return false
+	}
+
+	cli.DisplayHelp(cliParser.Filename)
+	return false
 }
 
 func validateDocker() error {
@@ -324,32 +351,6 @@ func validateDocker() error {
 	}
 }
 
-func imageFromOptions(cliParser cli.CLI) *DexecImage {
-	useStdin := len(cliParser.Options[cli.Source]) == 0
-	var image *DexecImage
-	if useStdin {
-		extensionOverride := len(cliParser.Options[cli.Extension]) == 1
-		if extensionOverride {
-			image, _ = LookupImageByExtension(cliParser.Options[cli.Extension][0])
-		} else {
-			overrideImage, _ := LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], "unknown")
-			image, _ = LookupImageByName(overrideImage.image)
-			image.version = overrideImage.version
-		}
-	} else {
-		extension := util.ExtractFileExtension(cliParser.Options[cli.Source][0])
-		image, _ = LookupImageByExtension(extension)
-		imageOverride := len(cliParser.Options[cli.SpecifyImage]) == 1
-		extensionOverride := len(cliParser.Options[cli.Extension]) == 1
-		if extensionOverride {
-			image, _ = LookupImageByExtension(cliParser.Options[cli.Extension][0])
-		} else if imageOverride {
-			image, _ = LookupImageByOverride(cliParser.Options[cli.SpecifyImage][0], extension)
-		}
-	}
-	return image
-}
-
 func main() {
 	cliParser := cli.ParseOsArgs(os.Args)
 
@@ -357,10 +358,7 @@ func main() {
 		if err := validateDocker(); err != nil {
 			log.Fatal(err)
 		} else {
-			RunDexecContainer(
-				imageFromOptions(cliParser),
-				cliParser.Options,
-			)
+			RunDexecContainer(cliParser.Options)
 		}
 	}
 }
