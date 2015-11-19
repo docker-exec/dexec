@@ -5,6 +5,24 @@ import (
 	"testing"
 )
 
+func TestSanitisePath(t *testing.T) {
+	cases := []struct {
+		path     string
+		platform string
+		want     string
+	}{
+		{"/Users/foo/bar", "darin", "/Users/foo/bar"},
+		{"/home/foo/bar", "linux", "/home/foo/bar"},
+		{"C:\\Users\\foo\\bar", "windows", "/c/Users/foo/bar"},
+	}
+	for _, c := range cases {
+		gotSanitisedPath := SanitisePath(c.path, c.platform)
+		if gotSanitisedPath != c.want {
+			t.Errorf("SanitisedPath %q != %q", gotSanitisedPath, c.want)
+		}
+	}
+}
+
 func TestAddPrefix(t *testing.T) {
 	cases := []struct {
 		inSlice []string

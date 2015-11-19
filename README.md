@@ -28,7 +28,7 @@ $ go get github.com/docker-exec/dexec
 
 ### Using Homebrew
 
-If you're on OSX you can install ```dexec``` with brew.
+If you're on OSX you can install the latest release of ```dexec``` with brew.
 
 ```sh
 $ brew install docker-exec/formula/dexec
@@ -108,15 +108,56 @@ As with sources, included files and directories are mounted using the default Do
 
 ### Override the image used by dexec
 
-```dexec``` stores a map of file extensions to Docker images and uses this to look up the right image to run for a given source file. This can be overridden in the following way:
+```dexec``` stores a map of file extensions to Docker images and uses this to look up the right image to run for a given source file. This can be overridden in the following ways:
+
+#### Override image by name/tag
 
 ```sh
-$ dexec foo.c --specify-image=dexec/lang-cpp
-$ dexec foo.c --specify-image dexec/lang-cpp
-$ dexec foo.c -s dexec/lang-cpp
+$ dexec foo.c --image=dexec/lang-cpp
+$ dexec foo.c --image dexec/lang-cpp
+$ dexec foo.c -m dexec/lang-cpp
 ```
 
-If no image version is specified, "latest" is used.
+This will cause ```dexec``` to attempt to use the supplied image. If no image version is specified, "latest" is used.
+
+#### Override image by file extension
+
+```sh
+$ dexec foo.c --extension=cpp
+$ dexec foo.c --extension cpp
+$ dexec foo.c -e cpp
+```
+
+This will cause ```dexec``` to attempt to lookup the image for the supplied extension in its map.
+
+### Reading from STDIN
+
+If no source files are specified, ```dexec``` will read from STDIN. Both manual entry and piping are supported. In both cases ```dexec``` writes the contents of STDIN to a temporary file, executes it and then removes it.
+
+```dexec``` requires either the [extension](#override-image-by-file-extension) or [image](#override-image-by-nametag) to be supplied.
+
+#### Manual entry
+
+Text may be entered until EOF is received (Ctrl-D).
+
+```sh
+$ dexec --extension js
+Enter your code. Ctrl-D to exit
+console.log('hello world')
+<Ctrl-D>
+
+hello world
+```
+
+#### Pipe
+
+```sh
+$ echo "console.log('hello world')" | dexec --extension js
+```
+
+```sh
+$ curl "http://some-url.com/foo.cpp" | dexec --image dexec/lang-cpp
+```
 
 ### Force dexec to pull latest version of image
 
@@ -127,11 +168,11 @@ $ dexec foo.cpp -u
 $ dexec foo.cpp --update
 ```
 
-### Make executable source with shebang
+### Executable source with shebang
 
 ```dexec``` can be used to make source code executable by adding a shebang that invokes it at the top of a source file.
 
-The shebang is stripped out at execution time but the original source containing the shebang preserved.
+The shebang is stripped out at execution time but the original source containing the shebang is preserved.
 
 ```c++
 #!/usr/bin/env dexec

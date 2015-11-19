@@ -46,6 +46,9 @@ const (
 
 	// VersionFlag indicates that the option specifies the version flag.
 	VersionFlag OptionType = iota
+
+	// Extension specifies the override file extenision to use.
+	Extension OptionType = iota
 )
 
 // CLI defines a data structure that represents the application's name and
@@ -62,12 +65,14 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	patternStandaloneA := regexp.MustCompile(`^-(a|-arg)$`)
 	patternStandaloneB := regexp.MustCompile(`^-(b|-build-arg)$`)
 	patternStandaloneI := regexp.MustCompile(`^-(i|-include)$`)
-	patternStandaloneS := regexp.MustCompile(`^-(s|-specify-image)$`)
+	patternStandaloneM := regexp.MustCompile(`^-(m|-image)$`)
+	patternStandaloneE := regexp.MustCompile(`^-(e|-extension)$`)
 	patternStandaloneC := regexp.MustCompile(`^-C$`)
 	patternCombinationA := regexp.MustCompile(`^--arg=(.+)$`)
 	patternCombinationB := regexp.MustCompile(`^--build-arg=(.+)$`)
 	patternCombinationI := regexp.MustCompile(`^--include=(.+)$`)
-	patternCombinationS := regexp.MustCompile(`^--specify-image=(.+)$`)
+	patternCombinationM := regexp.MustCompile(`^--image=(.+)$`)
+	patternCombinationE := regexp.MustCompile(`^--extension=(.+)$`)
 	patternSource := regexp.MustCompile(`^[^-_].+\..+`)
 	patternUpdateFlag := regexp.MustCompile(`^-(-update|u)$`)
 	patternHelpFlag := regexp.MustCompile(`^-(-help|h)$`)
@@ -80,8 +85,10 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return BuildArg, next, 2, nil
 	case patternStandaloneI.FindStringIndex(opt) != nil:
 		return Include, next, 2, nil
-	case patternStandaloneS.FindStringIndex(opt) != nil:
+	case patternStandaloneM.FindStringIndex(opt) != nil:
 		return SpecifyImage, next, 2, nil
+	case patternStandaloneE.FindStringIndex(opt) != nil:
+		return Extension, next, 2, nil
 	case patternStandaloneC.FindStringIndex(opt) != nil:
 		return TargetDir, next, 2, nil
 	case patternCombinationA.FindStringIndex(opt) != nil:
@@ -90,8 +97,10 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return BuildArg, patternCombinationB.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationI.FindStringIndex(opt) != nil:
 		return Include, patternCombinationI.FindStringSubmatch(opt)[1], 1, nil
-	case patternCombinationS.FindStringIndex(opt) != nil:
-		return SpecifyImage, patternCombinationS.FindStringSubmatch(opt)[1], 1, nil
+	case patternCombinationM.FindStringIndex(opt) != nil:
+		return SpecifyImage, patternCombinationM.FindStringSubmatch(opt)[1], 1, nil
+	case patternCombinationE.FindStringIndex(opt) != nil:
+		return Extension, patternCombinationE.FindStringSubmatch(opt)[1], 1, nil
 	case patternUpdateFlag.FindStringIndex(opt) != nil:
 		return UpdateFlag, "", 1, nil
 	case patternHelpFlag.FindStringIndex(opt) != nil:
@@ -153,6 +162,7 @@ func DisplayHelp(filename string) {
 	fmt.Printf("\t%-50s%s\n", "--arg, -a <argument>", "Pass <argument> to the executing code")
 	fmt.Printf("\t%-50s%s\n", "--build-arg, -b <build argument>", "Pass <build argument> to compiler")
 	fmt.Printf("\t%-50s%s\n", "--include, -i <file|path>", "Mount local <file|path> in dexec container")
+	fmt.Printf("\t%-50s%s\n", "--extension, -e <extension>", "Override the extension used to select image (required for stdin)")
 	fmt.Printf("\t%-50s%s\n", "--specify-image, -s <docker image>", "Override the image used with <docker image>")
 	fmt.Printf("\t%-50s%s\n", "--update, -u", "Update")
 	fmt.Printf("\t%-50s%s\n", "--help, -h", "Show help")
@@ -161,5 +171,5 @@ func DisplayHelp(filename string) {
 
 // DisplayVersion prints the version information for the program.
 func DisplayVersion(filename string) {
-	fmt.Printf("%s 1.0.3\n", filename)
+	fmt.Printf("%s 1.0.4-SNAPSHOT\n", filename)
 }
