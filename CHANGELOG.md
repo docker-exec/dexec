@@ -4,11 +4,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 ### Added
+- Added ability to read from STDIN either manually or via pipe.
+- Added ability to specify image to use by file extension.
+- Added clean functionality to remove all locally downloaded dexec images.
+- Add Vagrant-based acceptance tests.
 - Added installation instructions for Homebrew on OSX.
+- Add contributing instructions to readme.
 
 ### Changed
 - Migrated from custom code that called the Docker CLI to the library 'fsouza/go-dockerclient' which uses the Docker Remote API.
 - Deleted custom code that called the Docker CLI.
+- Switch to go vendoring for dependency management.
 
 ## [1.0.3] - 2015-11-13
 ### Fixed
