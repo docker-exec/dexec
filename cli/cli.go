@@ -49,6 +49,9 @@ const (
 
 	// Extension specifies the override file extenision to use.
 	Extension OptionType = iota
+
+	// CleanFlag indicates that the option specifies the clean flag.
+	CleanFlag OptionType = iota
 )
 
 // CLI defines a data structure that represents the application's name and
@@ -77,6 +80,7 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	patternUpdateFlag := regexp.MustCompile(`^-(-update|u)$`)
 	patternHelpFlag := regexp.MustCompile(`^-(-help|h)$`)
 	patternVersionFlag := regexp.MustCompile(`^-(-version|v)$`)
+	patternCleanFlag := regexp.MustCompile(`^--clean$`)
 
 	switch {
 	case patternStandaloneA.FindStringIndex(opt) != nil:
@@ -107,6 +111,8 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return HelpFlag, "", 1, nil
 	case patternVersionFlag.FindStringIndex(opt) != nil:
 		return VersionFlag, "", 1, nil
+	case patternCleanFlag.FindStringIndex(opt) != nil:
+		return CleanFlag, "", 1, nil
 	case patternSource.FindStringIndex(opt) != nil:
 		return Source, opt, 1, nil
 	default:
@@ -167,6 +173,7 @@ func DisplayHelp(filename string) {
 	fmt.Printf("\t%-36s%s\n", "--extension, -e <extension>", "Override the extension used to select image")
 	fmt.Printf("\t%-36s%s\n", "--image, -m <docker image>", "Override the image used with <docker image>")
 	fmt.Printf("\t%-36s%s\n", "--update, -u", "Force update of image")
+	fmt.Printf("\t%-36s%s\n", "--clean", "Remove all local dexec images")
 	fmt.Printf("\t%-36s%s\n", "--help, -h", "Show help")
 	fmt.Printf("\t%-36s%s\n", "--version, -v", "Display version info")
 }
