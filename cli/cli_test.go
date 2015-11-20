@@ -99,6 +99,18 @@ func TestGet(t *testing.T) {
 			WantedData{Image, "foo", 1, ""},
 		},
 		{
+			OptionData{"-e", "foo"},
+			WantedData{Extension, "foo", 2, ""},
+		},
+		{
+			OptionData{"--extension", "foo"},
+			WantedData{Extension, "foo", 2, ""},
+		},
+		{
+			OptionData{"--extension=foo", ""},
+			WantedData{Extension, "foo", 1, ""},
+		},
+		{
 			OptionData{"--help", ""},
 			WantedData{HelpFlag, "", 1, ""},
 		},
@@ -113,6 +125,10 @@ func TestGet(t *testing.T) {
 		{
 			OptionData{"-v", ""},
 			WantedData{VersionFlag, "", 1, ""},
+		},
+		{
+			OptionData{"--clean", ""},
+			WantedData{CleanFlag, "", 1, ""},
 		},
 	}
 	for _, c := range cases {
