@@ -2,6 +2,7 @@ package dexec
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 
 	"github.com/docker-exec/dexec/cli"
@@ -93,10 +94,14 @@ func FetchImage(name string, tag string, update bool, client *docker.Client) err
 	dockerImage := fmt.Sprintf(dexecImageTemplate, name, tag)
 
 	if _, err := client.InspectImage(dockerImage); update || err != nil {
-		client.PullImage(docker.PullImageOptions{
+		err = client.PullImage(docker.PullImageOptions{
 			Repository: name,
 			Tag:        tag,
 		}, docker.AuthConfiguration{})
+
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		if _, err = client.InspectImage(dockerImage); err != nil {
 			return err
