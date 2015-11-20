@@ -20,9 +20,10 @@ Binaries for other distributions are available on [Bintray](https://bintray.com/
 
 ### Using Go
 
-If you have Go installed and configured correctly, you can install ```dexec``` with the ```go get``` command.
+If you have Go 1.5 installed and configured correctly, you can install ```dexec``` with the ```go get``` command. The ```GO15VENDOREXPERIMENT``` environment variable needs to be set so that dependencies in the vendor directory will be used.
 
 ```sh
+$ export GO15VENDOREXPERIMENT=1
 $ go get github.com/docker-exec/dexec
 ```
 
@@ -56,7 +57,7 @@ $ dexec foo.cpp bar.cpp
 
 The sources are mounted individually using the default Docker mount permissions (rw) and can be specified by appending :ro or :rw to the source file.
 
-### Pass individual arguments for build
+### Pass arguments for build
 
 For compiled languages, arguments can be passed to the compiler.
 
@@ -84,7 +85,7 @@ By default, ```dexec``` assumes the sources are in the directory from which it i
 $ dexec -C /path/to/sources foo.cpp bar.cpp
 ```
 
-### Include files and folders mounted in Docker container
+### Include files and folders
 
 Individual files can be mounted without being passed to the compiler, for example header files in C & C++, or input files for program execution. These can be included in the following way.
 
@@ -166,6 +167,14 @@ Primarily for debugging purposes, the --update command triggers a ```docker pull
 ```sh
 $ dexec foo.cpp -u
 $ dexec foo.cpp --update
+```
+
+### Force dexec to remove all dexec images
+
+The --clean command removes all versions of images matching /^dexec/lang-([^:\s])$/. It can be combined with source files or STDIN input if you wish to remove all containers stored locally before executing.
+
+```sh
+$ dexec --clean
 ```
 
 ### Executable source with shebang
