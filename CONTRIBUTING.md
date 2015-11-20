@@ -2,7 +2,7 @@
 
 Fork the repo. Make your changes. Raise a PR.
 
-All PRs are welcome, and changes don't just have to be additive - if you have ideas about how to improve existing code, please submit these.
+All PRs are welcome, and changes don't just have to be additive - if you have ideas about how to improve existing code, please feel free to submit these.
 
 ## Code
 
@@ -20,7 +20,7 @@ Dependencies are managed using the experimental vendor feature introduced in Go 
 
 ## Unit Tests
 
-Unit tests are required for new contributions in most cases, and don't break the existing ones. Run the following command from the path that you checked out dexec to run the unit tests:
+Unit tests are required for new contributions in most cases. Don't break the existing ones. Run the following command from the path that you checked out dexec to run the unit tests:
 
 ```sh
 go test ./...
@@ -43,7 +43,7 @@ Run the following command from the path that you checked out dexec to run the ac
 ./acceptance-tests.sh run
 ```
 
-By default, the vagrant box will be restored to its initial state at the start of every run. This means that all the images will be redownloaded every time you run the tests. This may not be desirable as it takes several minutes to download the images. To avoid this you can add the ```--no-clean``` option to reuse images that have already been downloaded to the VM:
+By default, the vagrant box will be restored to its initial state at the start of every run. This guarantees sandboxing of the application and images, but means that all the images will be redownloaded every time you run the tests. This may not be desirable as it takes several minutes to download the images. To avoid this you can add the ```--no-clean``` option to reuse images that have already been downloaded to the VM:
 
 ```sh
 ./acceptance-tests.sh run --no-clean
