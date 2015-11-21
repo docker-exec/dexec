@@ -1,10 +1,16 @@
 # Contributing
 
+These are the guidelines for contributing to the ```dexec``` CLI and also applies to the associated Docker images and tooling projects.
+
+## Creating issues
+
+Please consult the [reference section](https://github.com/docker-exec/dexec/blob/master/README.md#reference) of the README before creating issues. It may contain the answer to your problem.
+
+## Code
+
 Fork the repo. Make your changes. Raise a PR.
 
 All PRs are welcome, and changes don't just have to be additive - if you have ideas about how to improve existing code, please feel free to submit these.
-
-## Code
 
 ```dexec``` is written in go and changes must adhere to the default settings for all the following tools:
 
