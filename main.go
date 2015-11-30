@@ -5,10 +5,7 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"strings"
 	"time"
-
-	uuid "github.com/satori/go.uuid"
 
 	"github.com/docker-exec/dexec/cli"
 	"github.com/docker-exec/dexec/dexec"
@@ -19,14 +16,11 @@ import (
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
-func RunDexecContainer(cliParser cli.CLI) {
+func RunDexecContainer(cliParser cli.CLI) int {
 	options := cliParser.Options
 
-	hasSources := len(options[cli.Source]) > 0
 	shouldClean := len(options[cli.CleanFlag]) > 0
 	updateImage := len(options[cli.UpdateFlag]) > 0
-	useExtension := len(options[cli.Extension]) == 1
-	useImage := len(options[cli.Image]) == 1
 
 	client, err := docker.NewClientFromEnv()
 
@@ -51,97 +45,92 @@ func RunDexecContainer(cliParser cli.CLI) {
 		}
 	}
 
-	if hasSources || useExtension || useImage {
-		dexecImage, err := dexec.ImageFromOptions(options)
-		if err != nil {
-			log.Fatal(err)
-		}
+	dexecImage, err := dexec.ImageFromOptions(options)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		dockerImage := fmt.Sprintf("%s:%s", dexecImage.Image, dexecImage.Version)
+	dockerImage := fmt.Sprintf("%s:%s", dexecImage.Image, dexecImage.Version)
 
-		if !hasSources {
-			lines := util.ReadStdin("Enter your code. Ctrl-D to exit", "<Ctrl-D>")
-			tmpFile := fmt.Sprintf("%s.%s", uuid.NewV4(), dexecImage.Extension)
+	if err := dexec.FetchImage(
+		dexecImage.Image,
+		dexecImage.Version,
+		updateImage,
+		client); err != nil {
+		log.Fatal(err)
+	}
 
-			util.WriteFile(tmpFile, []byte(strings.Join(lines, "\n")))
-			defer func() {
-				util.DeleteFile(tmpFile)
-			}()
+	var sourceBasenames []string
+	for _, source := range options[cli.Source] {
+		basename, _ := dexec.ExtractBasenameAndPermission(source)
+		sourceBasenames = append(sourceBasenames, []string{basename}...)
+	}
 
-			options[cli.Source] = []string{tmpFile}
-		}
+	entrypointArgs := util.JoinStringSlices(
+		sourceBasenames,
+		util.AddPrefix(options[cli.BuildArg], "-b"),
+		util.AddPrefix(options[cli.Arg], "-a"),
+	)
 
-		if err := dexec.FetchImage(
-			dexecImage.Image,
-			dexecImage.Version,
-			updateImage,
-			client); err != nil {
-			log.Fatal(err)
-		}
+	container, err := client.CreateContainer(docker.CreateContainerOptions{
+		Config: &docker.Config{
+			Image:     dockerImage,
+			Cmd:       entrypointArgs,
+			StdinOnce: true,
+			OpenStdin: true,
+		},
+	})
 
-		var sourceBasenames []string
-		for _, source := range options[cli.Source] {
-			basename, _ := dexec.ExtractBasenameAndPermission(source)
-			sourceBasenames = append(sourceBasenames, []string{basename}...)
-		}
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		entrypointArgs := util.JoinStringSlices(
-			sourceBasenames,
-			util.AddPrefix(options[cli.BuildArg], "-b"),
-			util.AddPrefix(options[cli.Arg], "-a"),
-		)
-
-		container, err := client.CreateContainer(docker.CreateContainerOptions{
-			Config: &docker.Config{
-				Image: dockerImage,
-				Cmd:   entrypointArgs,
-			},
-		})
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		defer func() {
-			if err = client.RemoveContainer(docker.RemoveContainerOptions{
-				ID: container.ID,
-			}); err != nil {
-				log.Fatal(err)
-			}
-		}()
-
-		if err = client.StartContainer(container.ID, &docker.HostConfig{
-			Binds: dexec.BuildVolumeArgs(
-				util.RetrievePath(options[cli.TargetDir]),
-				append(options[cli.Source], options[cli.Include]...)),
+	defer func() {
+		if err = client.RemoveContainer(docker.RemoveContainerOptions{
+			ID: container.ID,
 		}); err != nil {
 			log.Fatal(err)
 		}
+	}()
 
+	if err = client.StartContainer(container.ID, &docker.HostConfig{
+		Binds: dexec.BuildVolumeArgs(
+			util.RetrievePath(options[cli.TargetDir]),
+			append(options[cli.Source], options[cli.Include]...)),
+	}); err != nil {
+		log.Fatal(err)
+	}
+
+	go func() {
 		if err = client.AttachToContainer(docker.AttachToContainerOptions{
 			Container:    container.ID,
 			OutputStream: os.Stdout,
 			ErrorStream:  os.Stderr,
+			InputStream:  os.Stdin,
 			Stream:       true,
 			Stdout:       true,
 			Stderr:       true,
-			Logs:         true,
+			Stdin:        true,
 		}); err != nil {
 			log.Fatal(err)
 		}
+	}()
+
+	code, err := client.WaitContainer(container.ID)
+	if err != nil {
+		log.Fatal(err)
 	}
+	return code
 }
 
 func validate(cliParser cli.CLI) bool {
 	options := cliParser.Options
 
 	hasVersionFlag := len(options[cli.VersionFlag]) == 1
-	hasExtension := len(options[cli.Extension]) == 1
-	hasImage := len(options[cli.Image]) == 1
 	hasSources := len(options[cli.Source]) > 0
 	shouldClean := len(options[cli.CleanFlag]) > 0
 
-	if hasSources || hasImage || hasExtension || shouldClean {
+	if hasSources || shouldClean {
 		return true
 	}
 
@@ -180,7 +169,7 @@ func main() {
 		if err := validateDocker(); err != nil {
 			log.Fatal(err)
 		} else {
-			RunDexecContainer(cliParser)
+			os.Exit(RunDexecContainer(cliParser))
 		}
 	}
 }

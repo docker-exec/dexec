@@ -85,6 +85,20 @@ By default, ```dexec``` assumes the sources are in the directory from which it i
 $ dexec -C /path/to/sources foo.cpp bar.cpp
 ```
 
+### Read from STDIN
+
+```dexec``` will forward your terminal's STDIN to the executing code. You can redirect from a file or use pipe:
+
+```sh
+$ dexec foo.cpp <input.txt
+```
+
+```sh
+$ curl http://input | foo.cpp
+```
+
+If using keyboard entry, ctrl-d (EOF) will terminate reading from STDIN.
+
 ### Include files and folders
 
 Individual files can be mounted without being passed to the compiler, for example header files in C & C++, or input files for program execution. These can be included in the following way.
@@ -130,35 +144,6 @@ $ dexec foo.c -e cpp
 ```
 
 This will cause ```dexec``` to attempt to lookup the image for the supplied extension in its map.
-
-### Reading from STDIN
-
-If no source files are specified, ```dexec``` will read from STDIN. Both manual entry and piping are supported. In both cases ```dexec``` writes the contents of STDIN to a temporary file, executes it and then removes it.
-
-```dexec``` requires either the [extension](#override-image-by-file-extension) or [image](#override-image-by-nametag) to be supplied.
-
-#### Manual entry
-
-Text may be entered until EOF is received (Ctrl-D).
-
-```sh
-$ dexec --extension js
-Enter your code. Ctrl-D to exit
-console.log('hello world')
-<Ctrl-D>
-
-hello world
-```
-
-#### Pipe
-
-```sh
-$ echo "console.log('hello world')" | dexec --extension js
-```
-
-```sh
-$ curl "http://some-url.com/foo.cpp" | dexec --image dexec/lang-cpp
-```
 
 ### Force dexec to pull latest version of image
 
