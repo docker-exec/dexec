@@ -15,7 +15,7 @@ Vagrant.configure(2) do |config|
     sudo apt-get install -y curl git language-pack-en
 
     if [ ! -d /usr/local/go ]; then
-      curl -sSL https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz \
+      curl -sSL https://storage.googleapis.com/golang/go1.6.2.linux-amd64.tar.gz \
         | tar -C /usr/local -xzf -
     fi
 
@@ -36,7 +36,6 @@ Vagrant.configure(2) do |config|
     add_if_not_in_file '/home/vagrant/.profile' 'export GOPATH=/home/vagrant/.go'
     add_if_not_in_file '/home/vagrant/.profile' 'export PATH=$PATH:/usr/local/go/bin'
     add_if_not_in_file '/home/vagrant/.profile' 'export PATH=$PATH:$GOPATH/bin'
-    add_if_not_in_file '/home/vagrant/.profile' 'export GO15VENDOREXPERIMENT=1'
 
     touch /home/vagrant/.hushlogin
     mkdir -p /home/vagrant/.go/src/github.com/docker-exec/
