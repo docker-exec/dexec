@@ -52,6 +52,6 @@ run)
   run $2;;
 *)
   echo "Usage:"
-  echo "   ./acceptance-tests.sh [--no-clean]"
+  echo "   ./acceptance-tests.sh run [--no-clean]"
   ;;
 esac

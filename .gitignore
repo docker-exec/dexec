@@ -1,2 +1,3 @@
 .goxc.local.json
 .vagrant
+.vscode/.*

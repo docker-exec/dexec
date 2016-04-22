@@ -10,11 +10,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Add Vagrant-based acceptance tests.
 - Added installation instructions for Homebrew on OSX.
 - Add contributing instructions to readme.
+- Add vscode tasks configuration.
 
 ### Changed
 - Migrated from custom code that called the Docker CLI to the library 'fsouza/go-dockerclient' which uses the Docker Remote API.
 - Deleted custom code that called the Docker CLI.
-- Switch to go vendoring for dependency management.
+- Switch to go vendoring for dependency management using Godeps.
 
 ## [1.0.3] - 2015-11-13
 ### Fixed
