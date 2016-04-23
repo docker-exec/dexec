@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [1.0.5] - 2016-04-23
+### Fixed
+- Receive input from STDIN correctly and display STDOUT/STDERR messages only once.
+
 ## [1.0.4] - 2016-04-23
 ### Added
 - Added ability to read from STDIN either manually or via pipe.

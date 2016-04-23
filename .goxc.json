@@ -1,6 +1,6 @@
 {
     "BuildConstraints": "windows,linux,darwin,openbsd",
-	"PackageVersion": "1.0.4",
+	"PackageVersion": "1.0.5",
 	"TaskSettings": {
 		"bintray": {
 			"downloadspage": "bintray.md",
