@@ -25,6 +25,10 @@ function up() {
   fi
 }
 
+function down() {
+  vagrant halt
+}
+
 function restore() {
   get_snapshot_plugin
   if grep 'post-bootstrap' <(vagrant snapshot list); then
@@ -45,6 +49,7 @@ function run() {
   go get
   go install
   bats _bats/dexec.bats"
+  down
 }
 
 case $1 in

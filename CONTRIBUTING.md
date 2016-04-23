@@ -22,7 +22,7 @@ A good place to start is with the [go-plus](https://github.com/joefitzgerald/go-
 
 ## Dependencies
 
-Dependencies are managed using the experimental vendor feature introduced in Go 1.5. Versioned library code is committed to the dexec repo to guarantee reproducible builds, and the tool used to achieve this is [govendor](https://github.com/kardianos/govendor/). Please read the [govendor documentation](https://github.com/kardianos/govendor/blob/master/README.md#vendor-tool-for-go) if you need to add a new library.
+Dependencies are managed using the experimental vendor feature introduced in Go 1.5. Versioned library code is committed to the dexec repo to guarantee reproducible builds, and the tool used to achieve this is [Godep](https://github.com/tools/godep). Please read the [Godep documentation](https://github.com/tools/godep#add-a-dependency) if you need to add a new library.
 
 ## Unit Tests
 
