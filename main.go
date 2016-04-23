@@ -120,6 +120,19 @@ func RunDexecContainer(cliParser cli.CLI) int {
 	if err != nil {
 		log.Fatal(err)
 	}
+	
+	err = client.Logs(docker.LogsOptions {
+		Container: container.ID,
+		Stdout: true,
+    	Stderr: true,
+		OutputStream:os.Stdout,
+		ErrorStream: os.Stderr,
+	})
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+	
 	return code
 }
 
