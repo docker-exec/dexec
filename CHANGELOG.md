@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
+
+## [1.0.4] - 2016-04-23
 ### Added
 - Added ability to read from STDIN either manually or via pipe.
 - Added ability to specify image to use by file extension.
