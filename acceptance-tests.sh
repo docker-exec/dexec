@@ -48,7 +48,7 @@ function run() {
   cd /home/vagrant/.go/src/github.com/docker-exec/dexec
   go get
   go install
-  bats _bats/dexec.bats"
+  bats .bats/dexec.bats"
   down
 }
 

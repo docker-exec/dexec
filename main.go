@@ -104,12 +104,8 @@ func RunDexecContainer(cliParser cli.CLI) int {
 	go func() {
 		if err = client.AttachToContainer(docker.AttachToContainerOptions{
 			Container:    container.ID,
-			OutputStream: os.Stdout,
-			ErrorStream:  os.Stderr,
 			InputStream:  os.Stdin,
 			Stream:       true,
-			Stdout:       true,
-			Stderr:       true,
 			Stdin:        true,
 		}); err != nil {
 			log.Fatal(err)
