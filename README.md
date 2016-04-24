@@ -12,18 +12,17 @@ Download the appropriate binary for your OS and architecture, then unzip or unta
 
 | OS      | 64-bit | 32-bit |
 | ------- | ------ | ------ |
-| Linux   |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_linux_amd64.tar.gz) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_linux_386.tar.gz) |
-| Mac     |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_darwin_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_darwin_386.zip) |
-| Windows |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_windows_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.3_windows_386.zip) |
+| Linux   |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_linux_amd64.tar.gz) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_linux_386.tar.gz) |
+| Mac     |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_darwin_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_darwin_386.zip) |
+| Windows |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_windows_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_windows_386.zip) |
 
-Binaries for other distributions are available on [Bintray](https://bintray.com/dexec/release/dexec/1.0.3).
+Binaries for other distributions are available on [Bintray](https://bintray.com/dexec/release/dexec/_latestVersion).
 
 ### Using Go
 
-If you have Go 1.5 installed and configured correctly, you can install ```dexec``` with the ```go get``` command. The ```GO15VENDOREXPERIMENT``` environment variable needs to be set so that dependencies in the vendor directory will be used.
+If you have >= Go 1.5 installed and configured correctly, you can install ```dexec``` with the ```go get``` command. For Go 1.5 the ```GO15VENDOREXPERIMENT``` environment variable needs to be set so that dependencies in the vendor directory will be used.
 
 ```sh
-$ export GO15VENDOREXPERIMENT=1
 $ go get github.com/docker-exec/dexec
 ```
 
