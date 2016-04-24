@@ -198,5 +198,5 @@ $ ./foo.cpp
 
 * [Docker Exec GitHub Page](https://docker-exec.github.io/)
 * [Docker Exec GitHub Repositories](https://github.com/docker-exec)
-* [Docker Exec Images on Docker Hub](https://hub.docker.com/repos/dexec/)
+* [Docker Exec Images on Docker Hub](https://hub.docker.com/r/dexec/)
 * [dexec on Bintray](https://bintray.com/dexec/release/dexec/view)

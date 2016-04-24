@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
+### Fixed
+- Shebang support for Java files now works.
+- Re-enabled Java in acceptance tests.
 
 ## [1.0.5] - 2016-04-23
 ### Fixed

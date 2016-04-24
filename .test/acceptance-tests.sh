@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+function get_cwd() {
+  pushd $(dirname ${0}) >/dev/null
+  script_path=$(pwd -P)
+  popd >/dev/null
+  echo "${script_path}"
+}
+
+
 function get_snapshot_plugin() {
   if ! grep -q vagrant-vbox-snapshot <(vagrant plugin list); then
     vagrant plugin install vagrant-vbox-snapshot
@@ -37,6 +45,8 @@ function restore() {
 }
 
 function run() {
+  local cwd="$(get_cwd)"
+  pushd "${cwd}" >/dev/null
   up
   if [ -z "$1" ] || [ "$1" != "--no-clean" ]; then
     echo "Restoring to initial state"
@@ -48,8 +58,9 @@ function run() {
   cd /home/vagrant/.go/src/github.com/docker-exec/dexec
   go get
   go install
-  bats .bats/dexec.bats"
+  bats .test/bats/dexec.bats"
   down
+  popd >/dev/null
 }
 
 case $1 in
@@ -57,6 +68,6 @@ run)
   run $2;;
 *)
   echo "Usage:"
-  echo "   ./acceptance-tests.sh run [--no-clean]"
+  echo "   .test/acceptance-tests.sh run [--no-clean]"
   ;;
 esac

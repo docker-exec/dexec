@@ -122,7 +122,7 @@ var innerMap = map[string]*Image{
 	"go":     {"Go", "go", "dexec/lang-go", "1.0.1"},
 	"groovy": {"Groovy", "groovy", "dexec/lang-groovy", "1.0.1"},
 	"hs":     {"Haskell", "hs", "dexec/lang-haskell", "1.0.1"},
-	"java":   {"Java", "java", "dexec/lang-java", "1.0.2"},
+	"java":   {"Java", "java", "dexec/lang-java", "1.0.3"},
 	"lisp":   {"Lisp", "lisp", "dexec/lang-lisp", "1.0.1"},
 	"lua":    {"Lua", "lua", "dexec/lang-lua", "1.0.1"},
 	"js":     {"JavaScript", "js", "dexec/lang-node", "1.0.2"},

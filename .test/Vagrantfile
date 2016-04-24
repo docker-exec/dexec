@@ -3,6 +3,10 @@
 
 Vagrant.configure(2) do |config|
   config.vm.box = 'ubuntu/trusty64'
+  
+  config.vm.provider "virtualbox" do |v|
+    v.name = "dexec-acceptance-tests"
+  end
 
   config.vm.provision 'bootstrap', type: 'shell', inline: <<-SHELL
     function add_if_not_in_file() {
@@ -42,5 +46,5 @@ Vagrant.configure(2) do |config|
     chown -R vagrant:vagrant /home/vagrant/.go
   SHELL
 
-  config.vm.synced_folder '.', '/home/vagrant/.go/src/github.com/docker-exec/dexec'
+  config.vm.synced_folder '..', '/home/vagrant/.go/src/github.com/docker-exec/dexec'
 end

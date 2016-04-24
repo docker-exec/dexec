@@ -67,7 +67,7 @@ func TestLookupImageByExtension(t *testing.T) {
 		{"go", "go", "dexec/lang-go", "1.0.1", nil},
 		{"groovy", "groovy", "dexec/lang-groovy", "1.0.1", nil},
 		{"hs", "hs", "dexec/lang-haskell", "1.0.1", nil},
-		{"java", "java", "dexec/lang-java", "1.0.2", nil},
+		{"java", "java", "dexec/lang-java", "1.0.3", nil},
 		{"lisp", "lisp", "dexec/lang-lisp", "1.0.1", nil},
 		{"lua", "lua", "dexec/lang-lua", "1.0.1", nil},
 		{"js", "js", "dexec/lang-node", "1.0.2", nil},

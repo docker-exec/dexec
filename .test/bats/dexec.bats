@@ -75,7 +75,6 @@ function run_standard_tests() {
 }
 
 @test "java" {
-  skip
   run_standard_tests $BATS_TEST_DESCRIPTION
 }
 
