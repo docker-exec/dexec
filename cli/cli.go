@@ -76,7 +76,7 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	patternCombinationI := regexp.MustCompile(`^--include=(.+)$`)
 	patternCombinationM := regexp.MustCompile(`^--image=(.+)$`)
 	patternCombinationE := regexp.MustCompile(`^--extension=(.+)$`)
-	patternSource := regexp.MustCompile(`^[^-_].+\..+`)
+	patternSource := regexp.MustCompile(`^[^-_].*\..+`)
 	patternUpdateFlag := regexp.MustCompile(`^-(-update|u)$`)
 	patternHelpFlag := regexp.MustCompile(`^-(-help|h)$`)
 	patternVersionFlag := regexp.MustCompile(`^-(-version|v)$`)
@@ -177,5 +177,5 @@ func DisplayHelp(filename string) {
 
 // DisplayVersion prints the version information for the program.
 func DisplayVersion(filename string) {
-	fmt.Printf("%s 1.0.6-SNAPSHOT\n", filename)
+	fmt.Printf("%s 1.0.6\n", filename)
 }

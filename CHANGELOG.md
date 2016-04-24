@@ -3,9 +3,15 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
+
+## [1.0.6] - 2016-04-24
 ### Fixed
 - Shebang support for Java files now works.
-- Re-enabled Java in acceptance tests.
+- Ruby and Objective C no longer output 'stdin: not a tty' before program output.
+- Regex for extracting source filenames no longer ignores single character filenames e.g. 'a.cpp'. 
+
+### Changed
+- Re-enabled Java, Ruby and Objective C in acceptance tests.
 
 ## [1.0.5] - 2016-04-23
 ### Fixed

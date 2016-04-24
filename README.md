@@ -12,9 +12,9 @@ Download the appropriate binary for your OS and architecture, then unzip or unta
 
 | OS      | 64-bit | 32-bit |
 | ------- | ------ | ------ |
-| Linux   |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_linux_amd64.tar.gz) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_linux_386.tar.gz) |
-| Mac     |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_darwin_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_darwin_386.zip) |
-| Windows |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_windows_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.5_windows_386.zip) |
+| Linux   |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.6_linux_amd64.tar.gz) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.6_linux_386.tar.gz) |
+| Mac     |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.6_darwin_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.6_darwin_386.zip) |
+| Windows |  [64-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.6_windows_amd64.zip) | [32-bit](https://bintray.com/artifact/download/dexec/release/dexec_1.0.6_windows_386.zip) |
 
 Binaries for other distributions are available on [Bintray](https://bintray.com/dexec/release/dexec/_latestVersion).
 

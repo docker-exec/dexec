@@ -7,7 +7,6 @@ function get_cwd() {
   echo "${script_path}"
 }
 
-
 function get_snapshot_plugin() {
   if ! grep -q vagrant-vbox-snapshot <(vagrant plugin list); then
     vagrant plugin install vagrant-vbox-snapshot

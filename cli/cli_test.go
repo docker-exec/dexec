@@ -183,6 +183,10 @@ func TestSources(t *testing.T) {
 			[]string{"filename", "foo.cpp", "bar.java", "foo.bar.scala", "bar-foo.groovy"},
 			[]string{"foo.cpp", "bar.java", "foo.bar.scala", "bar-foo.groovy"},
 		},
+		{
+			[]string{"filename", "a.cpp"},
+			[]string{"a.cpp"},
+		},
 	}
 	for _, c := range cases {
 		got := ParseOsArgs(c.osArgs)

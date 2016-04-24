@@ -87,7 +87,6 @@ function run_standard_tests() {
 }
 
 @test "objc" {
-  skip
   run_standard_tests $BATS_TEST_DESCRIPTION
 }
 
@@ -112,7 +111,6 @@ function run_standard_tests() {
 }
 
 @test "ruby" {
-  skip
   run_standard_tests $BATS_TEST_DESCRIPTION
 }
 
