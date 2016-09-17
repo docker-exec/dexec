@@ -52,7 +52,7 @@ func RunDexecContainer(cliParser cli.CLI) int {
 
 	dockerImage := fmt.Sprintf("%s:%s", dexecImage.Image, dexecImage.Version)
 
-	if err := dexec.FetchImage(
+	if err = dexec.FetchImage(
 		dexecImage.Image,
 		dexecImage.Version,
 		updateImage,
@@ -79,6 +79,11 @@ func RunDexecContainer(cliParser cli.CLI) int {
 			StdinOnce: true,
 			OpenStdin: true,
 		},
+		HostConfig: &docker.HostConfig{
+			Binds: dexec.BuildVolumeArgs(
+				util.RetrievePath(options[cli.TargetDir]),
+				append(options[cli.Source], options[cli.Include]...)),
+		},
 	})
 
 	if err != nil {
@@ -93,20 +98,16 @@ func RunDexecContainer(cliParser cli.CLI) int {
 		}
 	}()
 
-	if err = client.StartContainer(container.ID, &docker.HostConfig{
-		Binds: dexec.BuildVolumeArgs(
-			util.RetrievePath(options[cli.TargetDir]),
-			append(options[cli.Source], options[cli.Include]...)),
-	}); err != nil {
+	if err = client.StartContainer(container.ID, &docker.HostConfig{}); err != nil {
 		log.Fatal(err)
 	}
 
 	go func() {
 		if err = client.AttachToContainer(docker.AttachToContainerOptions{
-			Container:    container.ID,
-			InputStream:  os.Stdin,
-			Stream:       true,
-			Stdin:        true,
+			Container:   container.ID,
+			InputStream: os.Stdin,
+			Stream:      true,
+			Stdin:       true,
 		}); err != nil {
 			log.Fatal(err)
 		}
@@ -116,19 +117,19 @@ func RunDexecContainer(cliParser cli.CLI) int {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
-	err = client.Logs(docker.LogsOptions {
-		Container: container.ID,
-		Stdout: true,
-    	Stderr: true,
-		OutputStream:os.Stdout,
-		ErrorStream: os.Stderr,
+
+	err = client.Logs(docker.LogsOptions{
+		Container:    container.ID,
+		Stdout:       true,
+		Stderr:       true,
+		OutputStream: os.Stdout,
+		ErrorStream:  os.Stderr,
 	})
-	
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	return code
 }
 
