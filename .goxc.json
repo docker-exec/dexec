@@ -1,5 +1,5 @@
 {
-	"BuildConstraints": "windows,linux,darwin,openbsd",
+	"BuildConstraints": "windows,linux,darwin",
 	"PackageVersion": "1.0.7",
 	"TaskSettings": {
 		"bintray": {
