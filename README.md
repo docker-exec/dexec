@@ -168,8 +168,8 @@ $ dexec --clean
 The shebang is stripped out at execution time but the original source containing the shebang is preserved.
 
 ```c++
-#!/usr/bin/env dexec
-#include <iostream>
+# !/usr/bin/env dexec
+# include <iostream>
 int main() {
     std::cout << "hello world" << std::endl;
 }
