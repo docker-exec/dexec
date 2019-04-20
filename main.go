@@ -14,6 +14,8 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 )
 
+const timeoutStatusCode = 124
+
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
@@ -142,7 +144,7 @@ func RunDexecContainer(cliParser cli.CLI) int {
 			if err != nil {
 				log.Fatal(err)
 			}
-			return processOutputsAndReturn(client, container, 1)
+			return processOutputsAndReturn(client, container, timeoutStatusCode)
 		case result := <-done:
 			code := result.Code
 			err := result.Error
