@@ -5,12 +5,13 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/docker-exec/dexec/cli"
 	"github.com/docker-exec/dexec/dexec"
 	"github.com/docker-exec/dexec/util"
-	"github.com/fsouza/go-dockerclient"
+	docker "github.com/fsouza/go-dockerclient"
 )
 
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
@@ -113,12 +114,54 @@ func RunDexecContainer(cliParser cli.CLI) int {
 		}
 	}()
 
+	type ClientRunResult struct {
+		Code  int
+		Error error
+	}
+
+	if timeout, ok := options[cli.Timeout]; ok && len(timeout) == 1 {
+		done := make(chan ClientRunResult)
+		go func() {
+			code, err := client.WaitContainer(container.ID)
+			result := ClientRunResult{
+				code,
+				err,
+			}
+			done <- result
+		}()
+
+		// Start a timer
+		num, _ := strconv.Atoi(timeout[0])
+		t := time.Duration(num) * time.Second
+		timeout := time.After(t)
+
+		select {
+		case <-timeout:
+			// kill container using container ID
+			err := client.KillContainer(docker.KillContainerOptions{ID: container.ID})
+			if err != nil {
+				log.Fatal(err)
+			}
+			return processOutputsAndReturn(client, container, 1)
+		case result := <-done:
+			code := result.Code
+			err := result.Error
+			if err != nil {
+				log.Fatal(err)
+			}
+			return processOutputsAndReturn(client, container, code)
+		}
+	}
+
 	code, err := client.WaitContainer(container.ID)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return processOutputsAndReturn(client, container, code)
+}
 
-	err = client.Logs(docker.LogsOptions{
+func processOutputsAndReturn(client *docker.Client, container *docker.Container, code int) int {
+	err := client.Logs(docker.LogsOptions{
 		Container:    container.ID,
 		Stdout:       true,
 		Stderr:       true,
