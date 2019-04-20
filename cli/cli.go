@@ -177,7 +177,7 @@ func DisplayHelp(filename string) {
 	fmt.Printf("\t%-36s%s\n", "--build-arg, -b <build argument>", "Pass <build argument> to compiler")
 	fmt.Printf("\t%-36s%s\n", "--include, -i <file|path>", "Mount local <file|path> in dexec container")
 	fmt.Printf("\t%-36s%s\n", "--extension, -e <extension>", "Override the image used by <extension>")
-	fmt.Printf("\t%-36s%s\n", "--timeout, -t <time>", "Kill the container if running over <time> in milliseconds")
+	fmt.Printf("\t%-36s%s\n", "--timeout, -t <time>", "Kill the container if running over <time> in seconds")
 	fmt.Printf("\t%-36s%s\n", "--image, -m <name>", "Override the image used by <name>")
 	fmt.Printf("\t%-36s%s\n", "--update, -u", "Force update of image")
 	fmt.Printf("\t%-36s%s\n", "--clean", "Remove all local dexec images")
