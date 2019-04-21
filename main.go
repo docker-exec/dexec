@@ -69,12 +69,22 @@ func RunDexecContainer(cliParser CLI) int {
 		AddPrefix(options[Arg], "-a"),
 	)
 
+	readFromStdin := false
+
+	if stat, _ := os.Stdin.Stat(); (stat.Mode() & os.ModeCharDevice) == 0 {
+		readFromStdin = true
+	}
+
 	container, err := client.CreateContainer(docker.CreateContainerOptions{
 		Config: &docker.Config{
-			Image:     dockerImage,
-			Cmd:       entrypointArgs,
-			StdinOnce: true,
-			OpenStdin: true,
+			Image:        dockerImage,
+			Cmd:          entrypointArgs,
+			StdinOnce:    true,
+			OpenStdin:    true,
+			AttachStdin:  true,
+			AttachStderr: true,
+			AttachStdout: true,
+			Tty:          !readFromStdin,
 		},
 		HostConfig: &docker.HostConfig{
 			Binds: BuildVolumeArgs(
@@ -99,35 +109,35 @@ func RunDexecContainer(cliParser CLI) int {
 		log.Fatal(err)
 	}
 
-	go func() {
-		if err = client.AttachToContainer(docker.AttachToContainerOptions{
-			Container:   container.ID,
-			InputStream: os.Stdin,
-			Stream:      true,
-			Stdin:       true,
-		}); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	code, err := client.WaitContainer(container.ID)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = client.Logs(docker.LogsOptions{
+	waiter, err := client.AttachToContainerNonBlocking(docker.AttachToContainerOptions{
 		Container:    container.ID,
-		Stdout:       true,
-		Stderr:       true,
+		InputStream:  os.Stdin,
 		OutputStream: os.Stdout,
 		ErrorStream:  os.Stderr,
+		Stream:       true,
+		Stdin:        true,
+		Stdout:       true,
+		Stderr:       true,
+		Logs:         true,
+		RawTerminal:  !readFromStdin,
 	})
 
 	if err != nil {
 		log.Fatal(err)
+		return 1
 	}
 
-	return code
+	if err := waiter.Wait(); err != nil {
+		log.Fatal(err)
+		return 1
+	}
+
+	if code, err := client.WaitContainer(container.ID); err != nil {
+		log.Fatal(err)
+		return 1
+	} else {
+		return code
+	}
 }
 
 func validate(cliParser CLI) bool {
