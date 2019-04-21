@@ -23,8 +23,8 @@ func TestUnknown(t *testing.T) {
 		want WantedData
 	}{
 		{
-			OptionData{"-bad", "Unknown option: -bad"},
-			WantedData{None, "", 0, "Unknown option: -bad"},
+			OptionData{"-bad", "unknown option: -bad"},
+			WantedData{None, "", 0, "unknown option: -bad"},
 		},
 	}
 	for _, c := range cases {
@@ -35,7 +35,7 @@ func TestUnknown(t *testing.T) {
 			t.Errorf("ParseOsArgs %q != %q", gotOptionValue, c.want.value)
 		} else if gotChomped != c.want.chomped {
 			t.Errorf("ParseOsArgs %q != %q", gotChomped, c.want.chomped)
-		} else if gotError.Error() != c.want.errorMessage {
+		} else if gotError != nil && gotError.Error() != c.want.errorMessage {
 			t.Errorf("ParseOsArgs %q != %q", gotError.Error(), c.want.errorMessage)
 		}
 	}
