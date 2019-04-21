@@ -93,10 +93,8 @@ $ dexec foo.cpp <input.txt
 ```
 
 ```sh
-$ curl http://input | foo.cpp
+$ curl http://input | dexec foo.cpp
 ```
-
-If using keyboard entry, ctrl-d (EOF) will terminate reading from STDIN.
 
 ### Include files and folders
 

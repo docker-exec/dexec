@@ -46,11 +46,11 @@ Vagrant's VirtualBox provider is used to spin up an Ubuntu VM on which Docker is
 Run the following command from the path that you checked out dexec to run the acceptance tests:
 
 ```sh
-.test/acceptance-tests.sh run
+AcceptanceTests/acceptance-tests.sh run
 ```
 
 By default, the vagrant box will be restored to its initial state at the start of every run. This guarantees sandboxing of the application and images, but means that all the images will be redownloaded every time you run the tests. This may not be desirable during development as it takes several minutes to download the images. To avoid this you can add the ```--no-clean``` option to reuse images that have already been downloaded to the VM:
 
 ```sh
-.test/acceptance-tests.sh run --no-clean
+AcceptanceTests/acceptance-tests.sh run --no-clean
 ```

@@ -7,20 +7,17 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/docker-exec/dexec/cli"
-	"github.com/docker-exec/dexec/dexec"
-	"github.com/docker-exec/dexec/util"
 	"github.com/fsouza/go-dockerclient"
 )
 
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
 // list of sources and arguments to the entrypoint.
-func RunDexecContainer(cliParser cli.CLI) int {
+func RunDexecContainer(cliParser CLI) int {
 	options := cliParser.Options
 
-	shouldClean := len(options[cli.CleanFlag]) > 0
-	updateImage := len(options[cli.UpdateFlag]) > 0
+	shouldClean := len(options[CleanFlag]) > 0
+	updateImage := len(options[UpdateFlag]) > 0
 
 	client, err := docker.NewClientFromEnv()
 
@@ -45,14 +42,14 @@ func RunDexecContainer(cliParser cli.CLI) int {
 		}
 	}
 
-	dexecImage, err := dexec.ImageFromOptions(options)
+	dexecImage, err := ImageFromOptions(options)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	dockerImage := fmt.Sprintf("%s:%s", dexecImage.Image, dexecImage.Version)
 
-	if err = dexec.FetchImage(
+	if err = FetchImage(
 		dexecImage.Image,
 		dexecImage.Version,
 		updateImage,
@@ -61,15 +58,15 @@ func RunDexecContainer(cliParser cli.CLI) int {
 	}
 
 	var sourceBasenames []string
-	for _, source := range options[cli.Source] {
-		basename, _ := dexec.ExtractBasenameAndPermission(source)
+	for _, source := range options[Source] {
+		basename, _ := ExtractBasenameAndPermission(source)
 		sourceBasenames = append(sourceBasenames, []string{basename}...)
 	}
 
-	entrypointArgs := util.JoinStringSlices(
+	entrypointArgs := JoinStringSlices(
 		sourceBasenames,
-		util.AddPrefix(options[cli.BuildArg], "-b"),
-		util.AddPrefix(options[cli.Arg], "-a"),
+		AddPrefix(options[BuildArg], "-b"),
+		AddPrefix(options[Arg], "-a"),
 	)
 
 	container, err := client.CreateContainer(docker.CreateContainerOptions{
@@ -80,9 +77,9 @@ func RunDexecContainer(cliParser cli.CLI) int {
 			OpenStdin: true,
 		},
 		HostConfig: &docker.HostConfig{
-			Binds: dexec.BuildVolumeArgs(
-				util.RetrievePath(options[cli.TargetDir]),
-				append(options[cli.Source], options[cli.Include]...)),
+			Binds: BuildVolumeArgs(
+				RetrievePath(options[TargetDir]),
+				append(options[Source], options[Include]...)),
 		},
 	})
 
@@ -133,23 +130,23 @@ func RunDexecContainer(cliParser cli.CLI) int {
 	return code
 }
 
-func validate(cliParser cli.CLI) bool {
+func validate(cliParser CLI) bool {
 	options := cliParser.Options
 
-	hasVersionFlag := len(options[cli.VersionFlag]) == 1
-	hasSources := len(options[cli.Source]) > 0
-	shouldClean := len(options[cli.CleanFlag]) > 0
+	hasVersionFlag := len(options[VersionFlag]) == 1
+	hasSources := len(options[Source]) > 0
+	shouldClean := len(options[CleanFlag]) > 0
 
 	if hasSources || shouldClean {
 		return true
 	}
 
 	if hasVersionFlag {
-		cli.DisplayVersion(cliParser.Filename)
+		DisplayVersion(cliParser.Filename)
 		return false
 	}
 
-	cli.DisplayHelp(cliParser.Filename)
+	DisplayHelp(cliParser.Filename)
 	return false
 }
 
@@ -173,7 +170,7 @@ func validateDocker() error {
 }
 
 func main() {
-	cliParser := cli.ParseOsArgs(os.Args)
+	cliParser := ParseOsArgs(os.Args)
 
 	if validate(cliParser) {
 		if err := validateDocker(); err != nil {
