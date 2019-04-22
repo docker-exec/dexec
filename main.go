@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"golang.org/x/crypto/ssh/terminal"
 	"log"
 	"os"
 	"regexp"
@@ -76,6 +77,17 @@ func RunDexecContainer(cliParser CLI) int {
 
 	if stat, _ := os.Stdin.Stat(); (stat.Mode() & os.ModeCharDevice) == 0 {
 		readFromStdin = true
+	} else {
+		fd := int(os.Stdin.Fd())
+		if terminal.IsTerminal(fd) {
+			oldState, err := terminal.MakeRaw(fd)
+			if err != nil {
+				log.Fatalf("could not make terminal raw: %s", err)
+			}
+			defer func() {
+				terminal.Restore(fd, oldState)
+			}()
+		}
 	}
 
 	container, err := client.CreateContainer(docker.CreateContainerOptions{
@@ -112,18 +124,22 @@ func RunDexecContainer(cliParser CLI) int {
 		log.Fatal(err)
 	}
 
-	waiter, err := client.AttachToContainerNonBlocking(docker.AttachToContainerOptions{
-		Container:    container.ID,
-		InputStream:  os.Stdin,
-		OutputStream: os.Stdout,
-		ErrorStream:  os.Stderr,
-		Stream:       true,
-		Stdin:        true,
-		Stdout:       true,
-		Stderr:       true,
-		Logs:         true,
-		RawTerminal:  !readFromStdin,
-	})
+	go func() {
+		if err := client.AttachToContainer(docker.AttachToContainerOptions{
+			Container:    container.ID,
+			InputStream:  os.Stdin,
+			OutputStream: os.Stdout,
+			ErrorStream:  os.Stderr,
+			Stream:       true,
+			Stdin:        true,
+			Stdout:       true,
+			Stderr:       true,
+			Logs:         false,
+			RawTerminal:  !readFromStdin,
+		}); err != nil {
+			log.Fatal(fmt.Errorf("unable to attach to container %s", err))
+		}
+	}()
 
 	type ClientRunResult struct {
 		Code  int
@@ -133,10 +149,6 @@ func RunDexecContainer(cliParser CLI) int {
 	if timeout, ok := options[Timeout]; ok && len(timeout) == 1 {
 		done := make(chan ClientRunResult)
 		go func() {
-			if err := waiter.Wait(); err != nil {
-				log.Fatal(err)
-			}
-
 			code, err := client.WaitContainer(container.ID)
 			result := ClientRunResult{
 				code,
@@ -145,14 +157,12 @@ func RunDexecContainer(cliParser CLI) int {
 			done <- result
 		}()
 
-		// Start a timer
 		num, _ := strconv.Atoi(timeout[0])
 		t := time.Duration(num) * time.Second
 		timeout := time.After(t)
 
 		select {
 		case <-timeout:
-			// kill container using container ID
 			err := client.KillContainer(docker.KillContainerOptions{ID: container.ID})
 			if err != nil {
 				log.Fatal(err)
@@ -167,11 +177,6 @@ func RunDexecContainer(cliParser CLI) int {
 			return code
 		}
 	} else {
-		if err := waiter.Wait(); err != nil {
-			log.Fatal(err)
-			return 1
-		}
-
 		code, err := client.WaitContainer(container.ID)
 		if err != nil {
 			log.Fatal(err)
