@@ -184,6 +184,7 @@ $ ./foo.cpp
 
 #### [docker-exec/dexec](https://github.com/docker-exec/dexec/graphs/contributors)
 
+ * [John H. Ayad](https://github.com/johnhany97)
  * [Alix Axel](https://github.com/alixaxel)
  * [kroton](https://github.com/kroton)
  * [John Albietz](https://github.com/inthecloud247)

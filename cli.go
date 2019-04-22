@@ -52,6 +52,9 @@ const (
 
 	// CleanFlag indicates that the option specifies the clean flag.
 	CleanFlag OptionType = iota
+
+	// Timeout indicates that the option specifies the timeout flag.
+	Timeout OptionType = iota
 )
 
 // CLI defines a data structure that represents the application's name and
@@ -70,12 +73,14 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 	patternStandaloneI := regexp.MustCompile(`^-(i|-include)$`)
 	patternStandaloneM := regexp.MustCompile(`^-(m|-image)$`)
 	patternStandaloneE := regexp.MustCompile(`^-(e|-extension)$`)
+	patternStandaloneT := regexp.MustCompile(`^-(t|-timeout)$`)
 	patternStandaloneC := regexp.MustCompile(`^-C$`)
 	patternCombinationA := regexp.MustCompile(`^--arg=(.+)$`)
 	patternCombinationB := regexp.MustCompile(`^--build-arg=(.+)$`)
 	patternCombinationI := regexp.MustCompile(`^--include=(.+)$`)
 	patternCombinationM := regexp.MustCompile(`^--image=(.+)$`)
 	patternCombinationE := regexp.MustCompile(`^--extension=(.+)$`)
+	patternCombinationT := regexp.MustCompile(`^--timeout=(.+)$`)
 	patternSource := regexp.MustCompile(`^[^-_].*\..+`)
 	patternUpdateFlag := regexp.MustCompile(`^-(-update|u)$`)
 	patternHelpFlag := regexp.MustCompile(`^-(-help|h)$`)
@@ -95,6 +100,8 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return Extension, next, 2, nil
 	case patternStandaloneC.FindStringIndex(opt) != nil:
 		return TargetDir, next, 2, nil
+	case patternStandaloneT.FindStringIndex(opt) != nil:
+		return Timeout, next, 2, nil
 	case patternCombinationA.FindStringIndex(opt) != nil:
 		return Arg, patternCombinationA.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationB.FindStringIndex(opt) != nil:
@@ -105,6 +112,8 @@ func ArgToOption(opt string, next string) (OptionType, string, int, error) {
 		return Image, patternCombinationM.FindStringSubmatch(opt)[1], 1, nil
 	case patternCombinationE.FindStringIndex(opt) != nil:
 		return Extension, patternCombinationE.FindStringSubmatch(opt)[1], 1, nil
+	case patternCombinationT.FindStringIndex(opt) != nil:
+		return Timeout, patternCombinationT.FindStringSubmatch(opt)[1], 1, nil
 	case patternUpdateFlag.FindStringIndex(opt) != nil:
 		return UpdateFlag, "", 1, nil
 	case patternHelpFlag.FindStringIndex(opt) != nil:
@@ -168,6 +177,7 @@ func DisplayHelp(filename string) {
 	fmt.Printf("\t%-36s%s\n", "--build-arg, -b <build argument>", "Pass <build argument> to compiler")
 	fmt.Printf("\t%-36s%s\n", "--include, -i <file|path>", "Mount local <file|path> in dexec container")
 	fmt.Printf("\t%-36s%s\n", "--extension, -e <extension>", "Override the image used by <extension>")
+	fmt.Printf("\t%-36s%s\n", "--timeout, -t <time>", "Kill the container if running over <time> in seconds")
 	fmt.Printf("\t%-36s%s\n", "--image, -m <name>", "Override the image used by <name>")
 	fmt.Printf("\t%-36s%s\n", "--update, -u", "Force update of image")
 	fmt.Printf("\t%-36s%s\n", "--clean", "Remove all local dexec images")
@@ -177,5 +187,5 @@ func DisplayHelp(filename string) {
 
 // DisplayVersion prints the version information for the program.
 func DisplayVersion(filename string) {
-	fmt.Printf("%s 1.0.8-SNAPSHOT\n", filename)
+	fmt.Printf("%s 1.0.9-SNAPSHOT\n", filename)
 }

@@ -5,10 +5,13 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"time"
 
-	"github.com/fsouza/go-dockerclient"
+	docker "github.com/fsouza/go-dockerclient"
 )
+
+const timeoutStatusCode = 124
 
 // RunDexecContainer runs an anonymous Docker container with a Docker Exec
 // image, mounting the specified sources and includes and passing the
@@ -122,20 +125,57 @@ func RunDexecContainer(cliParser CLI) int {
 		RawTerminal:  !readFromStdin,
 	})
 
-	if err != nil {
-		log.Fatal(err)
-		return 1
+	type ClientRunResult struct {
+		Code  int
+		Error error
 	}
 
-	if err := waiter.Wait(); err != nil {
-		log.Fatal(err)
-		return 1
-	}
+	if timeout, ok := options[Timeout]; ok && len(timeout) == 1 {
+		done := make(chan ClientRunResult)
+		go func() {
+			if err := waiter.Wait(); err != nil {
+				log.Fatal(err)
+			}
 
-	if code, err := client.WaitContainer(container.ID); err != nil {
-		log.Fatal(err)
-		return 1
+			code, err := client.WaitContainer(container.ID)
+			result := ClientRunResult{
+				code,
+				err,
+			}
+			done <- result
+		}()
+
+		// Start a timer
+		num, _ := strconv.Atoi(timeout[0])
+		t := time.Duration(num) * time.Second
+		timeout := time.After(t)
+
+		select {
+		case <-timeout:
+			// kill container using container ID
+			err := client.KillContainer(docker.KillContainerOptions{ID: container.ID})
+			if err != nil {
+				log.Fatal(err)
+			}
+			return timeoutStatusCode
+		case result := <-done:
+			code := result.Code
+			err := result.Error
+			if err != nil {
+				log.Fatal(err)
+			}
+			return code
+		}
 	} else {
+		if err := waiter.Wait(); err != nil {
+			log.Fatal(err)
+			return 1
+		}
+
+		code, err := client.WaitContainer(container.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
 		return code
 	}
 }
@@ -175,7 +215,7 @@ func validateDocker() error {
 	case err := <-ping:
 		return err
 	case <-time.After(5 * time.Second):
-		return fmt.Errorf("Request to Docker host timed out")
+		return fmt.Errorf("request to Docker host timed out")
 	}
 }
 
