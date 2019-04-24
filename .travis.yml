@@ -1,3 +1,6 @@
 sudo: false
 language: go
-script: go test . ./cli ./dexec ./util
+go:
+  - "1.12.x"
+env:
+  - GO111MODULE=on

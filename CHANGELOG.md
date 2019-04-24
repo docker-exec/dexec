@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
+### Added
+- Destroy option in acceptance test script.
+
+### Fixed
+- Fixed Stdin example in Readme.md.
+
+### Changed
+- Migrate to Go Modules for dependency management.
+- Move sources to root.
+- Renamed Image struct to ContainerImage to avoid clash with Image enum value.
+- Removed .vscode dir.
+- Renamed .test dir to AcceptanceTests
+- Updated years in LICENSE.
+
+### Removed
+- Removed redundant stdin reading code.
 
 ## [1.0.7] - 2016-09-18
 ### Fixed

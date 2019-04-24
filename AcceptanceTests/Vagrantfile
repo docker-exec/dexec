@@ -1,0 +1,52 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.box = 'ubuntu/bionic64'
+
+  config.vm.provider "virtualbox" do |v|
+    v.name = "dexec-acceptance-tests"
+  end
+
+  config.vm.provision 'bootstrap', type: 'shell', inline: <<-SHELL
+    function add_if_not_in_file() {
+      if ! grep -q "$2" "$1"; then
+        echo "$2" >> "$1"
+      fi
+    }
+
+    sudo apt-get update
+    sudo apt-get install -y curl git language-pack-en
+
+    if [ ! -d /usr/local/go ]; then
+      curl -sSL https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz \
+        | tar -C /usr/local -xzf -
+    fi
+
+    if [ ! -x /usr/bin/docker ]; then
+      curl -sSL https://get.docker.com/ | sh
+      sudo usermod -aG docker vagrant
+    fi
+
+    if [ ! -x /usr/local/bin/bats ]; then
+      bats_tmp=$(mktemp -d)
+      git clone https://github.com/bats-core/bats-core.git $bats_tmp
+      pushd $bats_tmp 2>/dev/null
+      git checkout v1.1.0
+      ./install.sh /usr/local
+      popd 2>/dev/null
+      rm -rf $bats_tmp
+    fi
+
+    add_if_not_in_file '/home/vagrant/.profile' 'export GOPATH=/home/vagrant/.go'
+    add_if_not_in_file '/home/vagrant/.profile' 'export GO111MODULE=on'
+    add_if_not_in_file '/home/vagrant/.profile' 'export PATH=$PATH:/usr/local/go/bin'
+    add_if_not_in_file '/home/vagrant/.profile' 'export PATH=$PATH:$GOPATH/bin'
+
+    touch /home/vagrant/.hushlogin
+    mkdir -p /home/vagrant/.go/src/github.com/docker-exec/
+    chown -R vagrant:vagrant /home/vagrant/.go
+  SHELL
+
+  config.vm.synced_folder '..', '/home/vagrant/.go/src/github.com/docker-exec/dexec'
+end
