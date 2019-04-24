@@ -40,7 +40,9 @@ func RunDexecContainer(cliParser CLI) int {
 			for _, tag := range image.RepoTags {
 				repoRegex := regexp.MustCompile("^dexec/lang-[^:\\s]+(:.+)?$")
 				if match := repoRegex.MatchString(tag); match {
-					client.RemoveImage(image.ID)
+					if err := client.RemoveImage(image.ID); err != nil {
+						log.Fatalf("cannot remove image %s", image.ID)
+					}
 				}
 			}
 		}
@@ -85,7 +87,9 @@ func RunDexecContainer(cliParser CLI) int {
 				log.Fatalf("could not make terminal raw: %s", err)
 			}
 			defer func() {
-				terminal.Restore(fd, oldState)
+				if err := terminal.Restore(fd, oldState); err != nil {
+					log.Fatalf("couldn't restore terminal: %s", err)
+				}
 			}()
 		}
 	}
@@ -120,33 +124,40 @@ func RunDexecContainer(cliParser CLI) int {
 		}
 	}()
 
+	success := make(chan struct{})
+	waiter, err := client.AttachToContainerNonBlocking(docker.AttachToContainerOptions{
+		Container:    container.ID,
+		InputStream:  os.Stdin,
+		OutputStream: os.Stdout,
+		ErrorStream:  os.Stderr,
+		Stream:       true,
+		Stdin:        true,
+		Stdout:       true,
+		Stderr:       true,
+		Logs:         false,
+		RawTerminal:  !readFromStdin,
+		Success:      success,
+	})
+	if err != nil {
+		log.Fatalf("unable to send attach to container request: %s", err)
+	}
+	<-success
+	close(success)
+
 	if err = client.StartContainer(container.ID, &docker.HostConfig{}); err != nil {
-		log.Fatal(err)
+		log.Fatalf("unable to start container: %s", err)
 	}
 
-	go func() {
-		if err := client.AttachToContainer(docker.AttachToContainerOptions{
-			Container:    container.ID,
-			InputStream:  os.Stdin,
-			OutputStream: os.Stdout,
-			ErrorStream:  os.Stderr,
-			Stream:       true,
-			Stdin:        true,
-			Stdout:       true,
-			Stderr:       true,
-			Logs:         false,
-			RawTerminal:  !readFromStdin,
-		}); err != nil {
-			log.Fatal(fmt.Errorf("unable to attach to container %s", err))
-		}
-	}()
-
-	type ClientRunResult struct {
-		Code  int
-		Error error
+	if err := waiter.Wait(); err != nil {
+		log.Fatalf("unable to attach to container: %s", err)
 	}
 
 	if timeout, ok := options[Timeout]; ok && len(timeout) == 1 {
+		type ClientRunResult struct {
+			Code  int
+			Error error
+		}
+
 		done := make(chan ClientRunResult)
 		go func() {
 			code, err := client.WaitContainer(container.ID)

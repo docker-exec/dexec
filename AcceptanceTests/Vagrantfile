@@ -30,8 +30,9 @@ Vagrant.configure(2) do |config|
 
     if [ ! -x /usr/local/bin/bats ]; then
       bats_tmp=$(mktemp -d)
-      git clone https://github.com/sstephenson/bats.git $bats_tmp
+      git clone https://github.com/bats-core/bats-core.git $bats_tmp
       pushd $bats_tmp 2>/dev/null
+      git checkout v1.1.0
       ./install.sh /usr/local
       popd 2>/dev/null
       rm -rf $bats_tmp
