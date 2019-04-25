@@ -148,10 +148,6 @@ func RunDexecContainer(cliParser CLI) int {
 		log.Fatalf("unable to start container: %s", err)
 	}
 
-	if err := waiter.Wait(); err != nil {
-		log.Fatalf("unable to attach to container: %s", err)
-	}
-
 	if timeout, ok := options[Timeout]; ok && len(timeout) == 1 {
 		type ClientRunResult struct {
 			Code  int
@@ -160,6 +156,10 @@ func RunDexecContainer(cliParser CLI) int {
 
 		done := make(chan ClientRunResult)
 		go func() {
+			if err := waiter.Wait(); err != nil {
+				log.Fatalf("unable to attach to container: %s", err)
+			}
+
 			code, err := client.WaitContainer(container.ID)
 			result := ClientRunResult{
 				code,
@@ -188,6 +188,10 @@ func RunDexecContainer(cliParser CLI) int {
 			return code
 		}
 	} else {
+		if err := waiter.Wait(); err != nil {
+			log.Fatalf("unable to attach to container: %s", err)
+		}
+
 		code, err := client.WaitContainer(container.ID)
 		if err != nil {
 			log.Fatal(err)
