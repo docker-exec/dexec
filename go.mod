@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/docker/docker v0.7.3-0.20190309235953-33c3200e0d16
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/fsouza/go-dockerclient v1.4.0
+	github.com/fsouza/go-dockerclient v1.4.1
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/kisielk/errcheck v1.2.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
