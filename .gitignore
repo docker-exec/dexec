@@ -1,4 +1,4 @@
 .goxc.local.json
-AcceptanceTests/.vagrant
-AcceptanceTests/*.log
-.vscode/.*
+.acceptance_tests/.vagrant
+.acceptance_tests/*.log
+build
