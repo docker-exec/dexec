@@ -187,5 +187,5 @@ func DisplayHelp(filename string) {
 
 // DisplayVersion prints the version information for the program.
 func DisplayVersion(filename string) {
-	fmt.Printf("%s 1.0.9-SNAPSHOT\n", filename)
+	fmt.Printf("%s 1.0.8\n", filename)
 }

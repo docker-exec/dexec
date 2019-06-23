@@ -3,11 +3,15 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
+
+## [1.0.8] - 2019-06-23
 ### Added
+- Timeout command line option that causes dexec to exit early if its value is exceeded.
 - Destroy option in acceptance test script.
 
 ### Fixed
-- Fixed Stdin example in Readme.md.
+- Streaming IO from container.
+- Stdin example in Readme.md.
 
 ### Changed
 - Migrate to Go Modules for dependency management.
@@ -91,7 +95,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Help dialog.
 - Version dialog.
 
-[unreleased]: https://github.com/docker-exec/dexec/compare/v1.0.3...HEAD
+[unreleased]: https://github.com/docker-exec/dexec/compare/v1.0.8...HEAD
+[1.0.8]: https://github.com/docker-exec/dexec/compare/v1.0.7...v1.0.8
+[1.0.7]: https://github.com/docker-exec/dexec/compare/v1.0.6...v1.0.7
+[1.0.6]: https://github.com/docker-exec/dexec/compare/v1.0.5...v1.0.6
+[1.0.5]: https://github.com/docker-exec/dexec/compare/v1.0.4...v1.0.5
+[1.0.4]: https://github.com/docker-exec/dexec/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/docker-exec/dexec/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/docker-exec/dexec/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/docker-exec/dexec/compare/v1.0.0...v1.0.1
