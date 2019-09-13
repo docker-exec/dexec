@@ -1,9 +1,9 @@
-name: Go
+name: Unit Tests
 on: [push]
 jobs:
 
-  build:
-    name: Build
+  test:
+    name: Build & Test
     runs-on: ubuntu-latest
     steps:
 
@@ -16,17 +16,7 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
 
-    - name: Get dependencies
+    - name: Run Tests
       env:
         GO111MODULE: on
-      run: |
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-
-    - name: Build
-      env:
-        GO111MODULE: on
-      run: go build -v .
+      run: go test -v
