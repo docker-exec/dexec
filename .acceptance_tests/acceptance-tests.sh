@@ -57,7 +57,7 @@ function run() {
   cd /home/vagrant/.go/src/github.com/docker-exec/dexec
   go get
   go install
-  bats .acceptance-tests/bats/dexec.bats"
+  bats .acceptance_tests/bats/dexec.bats"
   down
   popd >/dev/null
 }

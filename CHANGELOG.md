@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Timeout command line option that causes dexec to exit early if its value is exceeded.
 - Destroy option in acceptance test script.
+- Github Actions support.
 
 ### Fixed
 - Streaming IO from container.
@@ -18,12 +19,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Move sources to root.
 - Renamed Image struct to ContainerImage to avoid clash with Image enum value.
 - Removed .vscode dir.
-- Renamed .test dir to .acceptance-tests
+- Renamed .test dir to acceptance_tests
 - Updated years in LICENSE.
 - Migrate away from goxc to gox with custom scripts.
 
 ### Removed
 - Removed redundant stdin reading code.
+- Removed Travis support.
 
 ## [1.0.7] - 2016-09-18
 ### Fixed
