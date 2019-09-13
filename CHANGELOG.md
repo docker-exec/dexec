@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased][unreleased]
 ### Added
 - Destroy option in acceptance test script.
+- Github Actions support.
+- Renamed AcceptanceTests dir to .acceptance_tests
 
 ### Fixed
 - Fixed Stdin example in Readme.md.
