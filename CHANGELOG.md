@@ -15,7 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Move sources to root.
 - Renamed Image struct to ContainerImage to avoid clash with Image enum value.
 - Removed .vscode dir.
-- Renamed .test dir to acceptance-tests
+- Renamed .test dir to acceptance_tests
 - Updated years in LICENSE.
 
 ### Removed
