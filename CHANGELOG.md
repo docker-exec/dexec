@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Destroy option in acceptance test script.
 - Github Actions support.
+- Dropped Travis support.
 - Renamed AcceptanceTests dir to .acceptance_tests
 
 ### Fixed
