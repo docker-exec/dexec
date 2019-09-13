@@ -1,4 +1,4 @@
-name: Go
+name: Unit Tests
 on: [push]
 jobs:
 
