@@ -6,8 +6,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Destroy option in acceptance test script.
 - Github Actions support.
-- Dropped Travis support.
-- Renamed AcceptanceTests dir to .acceptance_tests
 
 ### Fixed
 - Fixed Stdin example in Readme.md.
@@ -17,11 +15,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Move sources to root.
 - Renamed Image struct to ContainerImage to avoid clash with Image enum value.
 - Removed .vscode dir.
-- Renamed .test dir to AcceptanceTests
+- Renamed .test dir to acceptance-tests
 - Updated years in LICENSE.
 
 ### Removed
 - Removed redundant stdin reading code.
+- Removed Travis support.
 
 ## [1.0.7] - 2016-09-18
 ### Fixed
